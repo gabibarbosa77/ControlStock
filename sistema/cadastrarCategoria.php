@@ -41,19 +41,45 @@ $resultado = $stmt->get_result();
         <div class="form-card" style="max-width: 520px; margin: 0 auto;">
             <h2>CADASTRAR CATEGORIAS</h2>
 
+            
             <?php if (isset($_GET['status'])): ?>
-
+            
                 <?php if ($_GET['status'] === 'sucesso'): ?>
                     <p>Categoria cadastrada com sucesso!</p>
                 
                 <?php elseif ($_GET['status'] === 'nome_invalido'): ?>
                     <p>Informe um nome válido para a categoria.</p>
                 
-                <?php else: ?>
-                    <p>Não foi possível cadastrar a categoria.</p>
-                <?php endif; ?>
+                <?php elseif ($_GET['status'] === 'edicao_concluida'): ?>
+                    <p>Categoria alterada com sucesso!</p>
                 
+                <?php elseif ($_GET['status'] === 'edicao_invalida'): ?>
+                    <p>Os dados informados para a edição são inválidos.</p>
+                
+                <?php elseif ($_GET['status'] === 'erro_edicao'): ?>
+                    <p>Não foi possível alterar a categoria.</p>
+
+                <?php elseif ($_GET['status'] === 'exclusao_concluida'): ?>
+                    <p>Categoria excluída com sucesso!</p>
+                
+                <?php elseif ($_GET['status'] === 'categoria_em_uso'): ?>
+                    <p>Não é possível excluir esta categoria porque existem produtos vinculados a ela.</p>
+                
+                <?php elseif ($_GET['status'] === 'categoria_nao_encontrada'): ?>
+                    <p>Categoria não encontrada ou não pertence ao usuário conectado.</p>
+                
+                <?php elseif ($_GET['status'] === 'exclusao_invalida'): ?>
+                    <p>O ID da categoria informado é inválido.</p>
+                
+                <?php elseif ($_GET['status'] === 'erro_exclusao'): ?>
+                    <p>Não foi possível excluir a categoria.</p>
+
+                <?php else: ?>
+                    <p>Não foi possível realizar a operação.</p>
+                
+                <?php endif; ?>
             <?php endif; ?>
+
 
             <form action="processa_adicionar_categoria.php" 
             method="POST" 
@@ -200,6 +226,11 @@ $resultado = $stmt->get_result();
             <h3>ALTERAR CATEGORIA</h3>
 
             <form action="processa_altera_categoria.php" method="POST" class="product-form">
+
+                 <input type="hidden"
+                    id="idCategoria_editar"
+                    name="idCategoria">
+                    
                 <div class="form-group">
                     <label for="nome_atual_cat">NOME ATUAL</label>
                     <input type="text" id="nome_atual_cat" name="nome_atual_cat" value="" readonly>
@@ -209,7 +240,7 @@ $resultado = $stmt->get_result();
 
                 <div class="form-group">
                     <label for="novo_nome_cat">NOVO NOME</label>
-                    <input type="text" id="novo_nome_cat" name="novo_nome_cat" placeholder="BEBIDA COM ALCOOL" required autocomplete="off">
+                    <input type="text" id="novo_nome_cat" name="novo_nome_cat" required maxlength="500">
                 </div>
 
                 <button type="submit" class="btn-save">
@@ -223,16 +254,26 @@ $resultado = $stmt->get_result();
     <!-- MODAL 2: EXCLUIR CATEGORIA (IMAGEM ENVIADA) -->
     <div class="modal-overlay" id="modal-excluir-categoria">
         <div class="modal-card">
-            <button class="modal-close-btn" onclick="closeDeleteCategoryModal()"><i class="fa-solid fa-xmark"></i></button>
+            <button class="modal-close-btn" type="button" onclick="closeDeleteCategoryModal()"><i class="fa-solid fa-xmark"></i></button>
+
             <h3 class="modal-title">EXCLUIR CATEGORIA</h3>
+
             <p class="modal-text">
                 TEM CERTEZA QUE DESEJA EXCLUIR <span id="nome-categoria-excluir">CATEGORIA</span>? 
                 <strong>NÃO SERÁ POSSÍVEL RESTAURAR APÓS EXCLUSÃO E TODOS OS PRODUTOS VINCULADOS A ESSA CATEGORIA SERÃO EXCLUÍDOS PERMANENTEMENTE.</strong>
             </p>
-            <button class="btn-confirm-delete" onclick="confirmDeleteCategory()">
-                <i class="fa-regular fa-trash-can"></i>
-                <span>EXCLUIR</span>
-            </button>
+
+            <form action="processa_excluir_categoria.php" method="POST">
+                <input type="hidden"
+                       id="idCategoria_excluir"
+                       name="idCategoria">
+
+                <button type="submit" class="btn-confirm-delete">
+                    <i class="fa-regular fa-trash-can"></i>
+                    <span>EXCLUIR</span>
+                </button>
+
+            </form>
         </div>
     </div>
 
@@ -252,9 +293,12 @@ $resultado = $stmt->get_result();
         const spanNomeCategoriaExcluir = document.getElementById('nome-categoria-excluir');
 
         // Funções Modal Editar
-        function openEditCategoryModal(nomeCategoria) {
-            inputNomeAtual.value = nomeCategoria;
-            inputNovoNome.value = nomeCategoria;
+        function openEditCategoryModal(idCategoria, nomeCategoria) {
+            document.getElementById('idCategoria_editar').value = idCategoria;
+
+            document.getElementById('nome_atual_cat').value = nomeCategoria;
+            document.getElementById('novo_nome_cat').value = nomeCategoria;
+                                
             modalEdit.classList.add('active');
         }
 
@@ -263,7 +307,9 @@ $resultado = $stmt->get_result();
         }
 
         // Funções Modal Excluir
-        function openDeleteCategoryModal(nomeCategoria) {
+        function openDeleteCategoryModal(idCategoria, nomeCategoria) {
+            document.getElementById('idCategoria_excluir').value = idCategoria;
+
             spanNomeCategoriaExcluir.textContent = nomeCategoria;
             modalDelete.classList.add('active');
         }
