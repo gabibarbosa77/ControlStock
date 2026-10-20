@@ -7,6 +7,93 @@ if (!isset($_SESSION['idUsuario'])) {
 }
 
 $idUsuario = (int)$_SESSION['idUsuario'];
+require_once '../conecta/conecta.php';
+
+// =========================================================================
+// 1. PROCESSAMENTO DO FORMULÁRIO (MÉTODO POST)
+// =========================================================================
+if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    $idProduto = (int)$_POST['id_produto'];
+    $nomeProduto = trim($_POST['nome_produto']);
+    $codigoBarras = (int)$_POST['codigo_barras'];
+    $idCategoria = (int)$_POST['categoria'];
+    $estoqueMinimo = (int)$_POST['estoque_minimo'];
+
+    // Tratamento do valor do Preço (transforma "R$ 10,50" ou "10,50" no formato decimal "10.50")
+    $precoRaw = $_POST['preco'];
+    $precoLimpo = preg_replace('/[^\d,]/', '', $precoRaw);
+    $precoFloat = (float)str_replace(',', '.', $precoLimpo);
+
+    // VALIDAÇÃO: Verifica se o código de barras já pertence a OUTRO produto do mesmo usuário
+    $sqlCheck = "SELECT idProduto FROM tb_produtos WHERE codigoBarras = ? AND idUsuario = ? AND idProduto <> ?";
+    $stmtCheck = $conn->prepare($sqlCheck);
+    $stmtCheck->bind_param("iii", $codigoBarras, $idUsuario, $idProduto);
+    $stmtCheck->execute();
+    $stmtCheck->store_result();
+
+    if ($stmtCheck->num_rows > 0) {
+        $stmtCheck->close();
+        $mensagemErro = "Atenção: Já existe outro produto cadastrado com este código de barras!";
+    } else {
+        $stmtCheck->close();
+
+        // Executa a atualização garantindo o vínculo com o idUsuario
+        $sqlUpdate = "UPDATE tb_produtos 
+                      SET nomeProduto = ?, 
+                          codigoBarras = ?, 
+                          idCategoria = ?, 
+                          precoProduto = ?, 
+                          estoqueMinimo = ? 
+                      WHERE idProduto = ? AND idUsuario = ?";
+
+        $stmtUpdate = $conn->prepare($sqlUpdate);
+        $stmtUpdate->bind_param("siidiii", $nomeProduto, $codigoBarras, $idCategoria, $precoFloat, $estoqueMinimo, $idProduto, $idUsuario);
+
+        if ($stmtUpdate->execute()) {
+            $stmtUpdate->close();
+            header("Location: exibirEstoque.php?status=sucesso");
+            exit();
+        } else {
+            $stmtUpdate->close();
+            $mensagemErro = "Erro ao atualizar o produto no banco de dados.";
+        }
+    }
+}
+
+// =========================================================================
+// 2. BUSCA DE DADOS PARA RENDERIZAR O FORMULÁRIO (MÉTODO GET)
+// =========================================================================
+if (!isset($_GET['id']) || empty($_GET['id'])) {
+    header("Location: exibirEstoque.php");
+    exit();
+}
+
+$idProduto = (int)$_GET['id'];
+
+// Busca os dados do produto
+$sqlProduto = "SELECT idProduto, nomeProduto, codigoBarras, precoProduto, estoqueMinimo, idCategoria 
+               FROM tb_produtos 
+               WHERE idProduto = ? AND idUsuario = ?";
+$stmt = $conn->prepare($sqlProduto);
+$stmt->bind_param("ii", $idProduto, $idUsuario);
+$stmt->execute();
+$resProduto = $stmt->get_result();
+
+if ($resProduto->num_rows === 0) {
+    header("Location: exibirEstoque.php");
+    exit();
+}
+
+$produto = $resProduto->fetch_assoc();
+$stmt->close();
+
+// Busca as categorias do usuário
+$sqlCategorias = "SELECT idCategoria, nomeCategoria FROM tb_categoria WHERE idUsuario = ? ORDER BY nomeCategoria ASC";
+$stmtCat = $conn->prepare($sqlCategorias);
+$stmtCat->bind_param("i", $idUsuario);
+$stmtCat->execute();
+$resCategorias = $stmtCat->get_result();
+$stmtCat->close();
 ?>
 
 <!DOCTYPE html>
@@ -23,9 +110,7 @@ $idUsuario = (int)$_SESSION['idUsuario'];
     <?php include 'menu.php'; ?>
 
     <main class="page-container">
-        
         <div class="form-card">
-            
             <div class="card-header-title">
                 <a href="exibirEstoque.php" class="btn-back" title="Voltar ao Estoque">
                     <i class="fa-solid fa-chevron-left"></i>
@@ -33,41 +118,53 @@ $idUsuario = (int)$_SESSION['idUsuario'];
                 <h2>ALTERAR PRODUTO</h2>
             </div>
 
-            <form action="processa_alteracao.php" method="POST" class="product-form" id="form-altera-produto">
-                
+            <!-- Exibição de Erro utilizando a classe de alerta padrão do style.css -->
+            <?php if (isset($mensagemErro)): ?>
+                <div class="alert-box erro">
+                    <i class="fa-solid fa-triangle-exclamation"></i>
+                    <span><?= htmlspecialchars($mensagemErro) ?></span>
+                </div>
+            <?php endif; ?>
+
+            <!-- Formulário enviando para a própria página com o ID via GET -->
+            <form action="alteraProduto.php?id=<?= $produto['idProduto'] ?>" method="POST" class="product-form" id="form-altera-produto">
+                <input type="hidden" name="id_produto" value="<?= $produto['idProduto'] ?>">
+
                 <!-- Nome do Produto -->
                 <div class="form-group">
                     <label for="nome_produto">NOME PRODUTO</label>
-                    <input type="text" id="nome_produto" name="nome_produto" value="PRODUTO1" required autocomplete="off">
+                    <input type="text" id="nome_produto" name="nome_produto" value="<?= htmlspecialchars($produto['nomeProduto']) ?>" required autocomplete="off">
                 </div>
 
-                <!-- Código de Barras (Max 10) -->
+                <!-- Código de Barras (Bloqueado/Readonly para edição) -->
                 <div class="form-group">
                     <label for="codigo_barras">CÓDIGO BARRAS (MÁX: 10 CARACTERES)</label>
-                    <input type="text" id="codigo_barras" name="codigo_barras" value="7891234567890" maxlength="10" required autocomplete="off">
+                    <input type="text" id="codigo_barras" name="codigo_barras" value="<?= htmlspecialchars($produto['codigoBarras']) ?>" maxlength="10" readonly required autocomplete="off">
                 </div>
 
                 <!-- Categoria -->
                 <div class="form-group">
                     <label for="categoria">CATEGORIA</label>
                     <select id="categoria" name="categoria" required>
-                        <option value="bebida_alcool" selected>BEBIDA C. ALCOOL</option>
-                        <option value="bebida_sem_alcool">BEBIDA S. ALCOOL</option>
-                        <option value="doce">DOCE</option>
-                        <option value="eletronicos">ELETRÔNICOS</option>
+                        <option value="">Selecione uma Categoria</option>
+                        <?php while ($cat = $resCategorias->fetch_assoc()): ?>
+                            <option value="<?= $cat['idCategoria'] ?>" <?= ($cat['idCategoria'] == $produto['idCategoria']) ? 'selected' : '' ?>>
+                                <?= htmlspecialchars($cat['nomeCategoria']) ?>
+                            </option>
+                        <?php endwhile; ?>
                     </select>
                 </div>
 
                 <!-- Preço -->
                 <div class="form-group">
                     <label for="preco">PREÇO</label>
-                    <input type="text" id="preco" name="preco" value="R$00,00" required>
+                    <input type="text" id="preco" name="preco" value="R$<?= number_format($produto['precoProduto'], 2, ',', '.') ?>" required>
                 </div>
 
                 <!-- Estoque Mínimo -->
                 <div class="form-group">
                     <label for="estoque_minimo">ESTOQUE MÍNIMO</label>
-                    <input type="text" id="estoque_minimo" name="estoque_minimo" value="R$00,00" required>
+                    <input type="number" id="estoque_minimo" name="estoque_minimo" value="<?= (int)$produto['estoqueMinimo'] ?>" required min="0">
                 </div>
 
                 <!-- Botão Salvar -->
@@ -77,11 +174,10 @@ $idUsuario = (int)$_SESSION['idUsuario'];
                 </button>
             </form>
         </div>
-
     </main>
 
     <footer class="footer">
-        <p>© <?php echo date('Y'); ?> controlStoke — Sistema de Controle de Estoque[cite: 2]</p>
+        <p>© <?php echo date('Y'); ?> controlStoke — Sistema de Controle de Estoque</p>
         <p><a href="politica.php">Política de Privacidade</a></p>
     </footer>
 
@@ -98,7 +194,6 @@ $idUsuario = (int)$_SESSION['idUsuario'];
             }
 
             applyCurrencyMask(document.getElementById('preco'));
-            applyCurrencyMask(document.getElementById('estoque_minimo'));
         });
     </script>
 </body>

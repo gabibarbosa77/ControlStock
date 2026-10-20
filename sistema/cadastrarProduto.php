@@ -7,6 +7,44 @@ if (!isset($_SESSION['idUsuario'])) {
 }
 
 $idUsuario = (int)$_SESSION['idUsuario'];
+
+// Conexão com o banco de dados
+require_once '../conecta/conecta.php';
+
+// Busca as categorias cadastradas pelo usuário logado
+$sqlCategorias = "SELECT idCategoria, nomeCategoria 
+                  FROM tb_categoria 
+                  WHERE idUsuario = ? 
+                  ORDER BY nomeCategoria";
+
+$stmtCat = $conn->prepare($sqlCategorias);
+$stmtCat->bind_param("i", $idUsuario);
+$stmtCat->execute();
+$resCategorias = $stmtCat->get_result();
+
+// Tratamento das mensagens de retorno via URL (?status=...)
+$status = $_GET['status'] ?? '';
+$mensagem = '';
+$tipoStatus = '';
+
+switch ($status) {
+    case 'sucesso':
+        $mensagem = "PRODUTO CADASTRADO COM SUCESSO!";
+        $tipoStatus = 'sucesso';
+        break;
+    case 'codigo_duplicado':
+        $mensagem = "CÓDIGO DE BARRAS JÁ CADASTRADO PARA OUTRO PRODUTO!";
+        $tipoStatus = 'erro';
+        break;
+    case 'invalid_input':
+        $mensagem = "PREENCHA TODOS OS CAMPOS OBRIGATÓRIOS CORRETAMENTE.";
+        $tipoStatus = 'erro';
+        break;
+    case 'error':
+        $mensagem = "ERRO AO SALVAR O PRODUTO NO BANCO DE DADOS.";
+        $tipoStatus = 'erro';
+        break;
+}
 ?>
 
 <!DOCTYPE html>
@@ -27,7 +65,15 @@ $idUsuario = (int)$_SESSION['idUsuario'];
         <div class="form-card">
             <h2>CADASTRAR PRODUTO</h2>
 
-            <form action="processa_produto.php" method="POST" class="product-form" id="form-cadastrar-produto">
+            <!-- Exibição do Alerta de Erro caso o código seja duplicado ou haja falha -->
+            <?php if (!empty($mensagem) && $tipoStatus === 'erro'): ?>
+                <div class="alert-box erro">
+                    <i class="fa-solid fa-triangle-exclamation"></i>
+                    <span><?= htmlspecialchars($mensagem) ?></span>
+                </div>
+            <?php endif; ?>
+
+            <form action="processaProduto.php" method="POST" class="product-form" id="form-cadastrar-produto">
                 
                 <!-- Nome do Produto -->
                 <div class="form-group">
@@ -59,14 +105,16 @@ $idUsuario = (int)$_SESSION['idUsuario'];
                     <input type="number" id="estoque_minimo" name="estoque_minimo" min="0" required>
                 </div>
 
-                <!-- Categoria -->
+                <!-- Categoria Dinâmica do Banco de Dados -->
                 <div class="form-group">
                     <label for="categoria">CATEGORIA</label>
-                    <select id="categoria" name="categoria" required>
+                    <select id="categoria" name="id_categoria" required>
                         <option value="" disabled selected>NENHUMA OPÇÃO SELECIONADA</option>
-                        <option value="eletronicos">ELETRÔNICOS</option>
-                        <option value="informatica">INFORMÁTICA</option>
-                        <option value="acessorios">ACESSÓRIOS</option>
+                        <?php while ($cat = $resCategorias->fetch_assoc()): ?>
+                            <option value="<?= (int)$cat['idCategoria'] ?>">
+                                <?= htmlspecialchars($cat['nomeCategoria']) ?>
+                            </option>
+                        <?php endwhile; ?>
                     </select>
                 </div>
 
@@ -77,10 +125,18 @@ $idUsuario = (int)$_SESSION['idUsuario'];
             </form>
         </div>
 
+        <!-- Exibição do Toast de Sucesso utilizando o estilo nativo do style.css -->
+        <?php if (!empty($mensagem) && $tipoStatus === 'sucesso'): ?>
+            <div class="toast-success">
+                <i class="fa-solid fa-circle-check toast-icon"></i>
+                <span class="toast-text"><?= htmlspecialchars($mensagem) ?></span>
+            </div>
+        <?php endif; ?>
+
     </main>
 
     <footer class="footer">
-        <p>© <?php echo date('Y'); ?> controlStoke — Sistema de Controle de Estoque[cite: 2]</p>
+        <p>© <?php echo date('Y'); ?> controlStoke — Sistema de Controle de Estoque</p>
         <p><a href="politica.php">Política de Privacidade</a></p>
     </footer>
 

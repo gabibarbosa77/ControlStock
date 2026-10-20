@@ -92,6 +92,5 @@
         <p>© <?php echo date('Y'); ?> controlStoke — Sistema de Controle de Estoque[cite: 2]</p>
         <p><a href="politica.php">Política de Privacidade</a></p>
     </footer>
-
 </body>
 </html>

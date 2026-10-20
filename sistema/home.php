@@ -1,17 +1,94 @@
 <?php
 // home.php
-// Inicie a sessão ANTES de qualquer saída
 if (session_status() === PHP_SESSION_NONE) {
     session_start();
 }
 
-// Verificando se está logado
 if (!isset($_SESSION['idUsuario'])) {
     header("Location: ../login.php");
     exit();
 }
-$idUsuario = $_SESSION['idUsuario'];
 
+$idUsuario = (int)$_SESSION['idUsuario'];
+
+require_once '../conecta/conecta.php';
+
+// 1. CONSULTA NOME DO USUÁRIO
+$nomeUsuario = "Usuário";
+$sqlUser = "SELECT nomeUsuario FROM tb_usuario WHERE idUsuario = ?";
+$stmtUser = $conn->prepare($sqlUser);
+$stmtUser->bind_param("i", $idUsuario);
+$stmtUser->execute();
+$resUser = $stmtUser->get_result();
+if ($rowUser = $resUser->fetch_assoc()) {
+    $nomeUsuario = $rowUser['nomeUsuario'];
+}
+$stmtUser->close();
+
+// 2. MÉTRICAS DE PRODUTOS E ESTOQUE
+$totalProdutos = 0;
+$produtosEmEstoque = 0;
+$estoqueBaixo = 0;
+$estoqueZerado = 0;
+
+$sqlMetricas = "SELECT estoqueProduto, estoqueMinimo FROM tb_produtos WHERE idUsuario = ?";
+$stmtMetricas = $conn->prepare($sqlMetricas);
+$stmtMetricas->bind_param("i", $idUsuario);
+$stmtMetricas->execute();
+$resMetricas = $stmtMetricas->get_result();
+
+while ($row = $resMetricas->fetch_assoc()) {
+    $totalProdutos++;
+    $qtd = (int)$row['estoqueProduto'];
+    $min = (int)$row['estoqueMinimo'];
+
+    $produtosEmEstoque += $qtd;
+
+    if ($qtd == 0) {
+        $estoqueZerado++;
+    } elseif ($qtd <= $min) {
+        $estoqueBaixo++;
+    }
+}
+$stmtMetricas->close();
+
+// 3. MOVIMENTAÇÕES RECENTES (ÚLTIMAS 3)
+$sqlMov = "SELECT es.tipoEntradaSaida, es.quantidadeEntradaSaida, p.nomeProduto
+           FROM tb_entradasaida es
+           INNER JOIN tb_produtos p ON es.idProduto = p.idProduto
+           WHERE es.idUsuario = ?
+           ORDER BY es.isEntradaSaida DESC
+           LIMIT 3";
+
+$stmtMov = $conn->prepare($sqlMov);
+$stmtMov->bind_param("i", $idUsuario);
+$stmtMov->execute();
+$resMov = $stmtMov->get_result();
+
+$movimentacoesRecentes = [];
+while ($rowMov = $resMov->fetch_assoc()) {
+    $movimentacoesRecentes[] = $rowMov;
+}
+$stmtMov->close();
+
+// 4. ITENS CRÍTICOS PARA REPOSIÇÃO (ZERADOS OU BAIXOS)
+$sqlCriticos = "SELECT p.codigoBarras, p.nomeProduto, p.estoqueProduto, p.estoqueMinimo, c.nomeCategoria
+                FROM tb_produtos p
+                LEFT JOIN tb_categoria c ON p.idCategoria = c.idCategoria
+                WHERE p.idUsuario = ? AND p.estoqueProduto <= p.estoqueMinimo
+                ORDER BY p.estoqueProduto ASC
+                LIMIT 5";
+
+$stmtCriticos = $conn->prepare($sqlCriticos);
+$stmtCriticos->bind_param("i", $idUsuario);
+$stmtCriticos->execute();
+$resCriticos = $stmtCriticos->get_result();
+
+$itensCriticos = [];
+while ($rowCritico = $resCriticos->fetch_assoc()) {
+    $itensCriticos[] = $rowCritico;
+}
+$stmtCriticos->close();
 ?>
 
 <!DOCTYPE html>
@@ -30,7 +107,7 @@ $idUsuario = $_SESSION['idUsuario'];
     <main class="dashboard-container">
         
         <div class="dashboard-header">
-            <h1>Seja bem-vindo(a) ao controlStoke!</h1>
+            <h1>Seja bem-vindo(a), <?= htmlspecialchars($nomeUsuario) ?>!</h1>
             <p>Confira um resumo do estoque atual</p>
         </div>
 
@@ -38,52 +115,58 @@ $idUsuario = $_SESSION['idUsuario'];
             
             <div class="dashboard-sidebar-column">
                 
-                <div class="alert-card-danger">
-                    <h3>ATENÇÃO</h3>
-                    <p>ALGUNS PRODUTOS ESTÃO COM O ESTOQUE ZERADO!!</p>
-                </div>
+                <?php if ($estoqueZerado > 0): ?>
+                    <div class="alert-card-danger">
+                        <h3>ATENÇÃO</h3>
+                        <p>EXISTEM <?= $estoqueZerado ?> PRODUTO(S) COM O ESTOQUE ZERADO!!</p>
+                    </div>
+                <?php endif; ?>
 
                 <div class="recent-movements-card">
                     <h4>Movimentações Recentes</h4>
                     <ul class="movement-list">
-                        <li class="movement-item">
-                            <div class="movement-info">
-                                <div class="movement-icon in">
-                                    <i class="fa-solid fa-arrow-up"></i>
-                                </div>
-                                <div class="movement-details">
-                                    <strong>PRODUTO1</strong>
-                                    <span>Entrada de produtos</span>
-                                </div>
-                            </div>
-                            <span class="movement-value positive">+100</span>
-                        </li>
+                        <?php if (empty($movimentacoesRecentes)): ?>
+                            <li class="movement-item" style="padding: 10px;">Sem movimentações recentes.</li>
+                        <?php else: ?>
+                            <?php foreach ($movimentacoesRecentes as $mov): ?>
+                                <?php
+                                    $tipo = $mov['tipoEntradaSaida'];
+                                    $qtd = (int)$mov['quantidadeEntradaSaida'];
 
-                        <li class="movement-item">
-                            <div class="movement-info">
-                                <div class="movement-icon out">
-                                    <i class="fa-solid fa-arrow-down"></i>
-                                </div>
-                                <div class="movement-details">
-                                    <strong>PRODUTO2</strong>
-                                    <span>Saída de produtos</span>
-                                </div>
-                            </div>
-                            <span class="movement-value negative">-50</span>
-                        </li>
-
-                        <li class="movement-item">
-                            <div class="movement-info">
-                                <div class="movement-icon out">
-                                    <i class="fa-solid fa-arrow-down"></i>
-                                </div>
-                                <div class="movement-details">
-                                    <strong>PRODUTO3</strong>
-                                    <span>Saída de produtos</span>
-                                </div>
-                            </div>
-                            <span class="movement-value negative">-150</span>
-                        </li>
+                                    if ($tipo === 'adicionar') {
+                                        $classeIcone = 'in';
+                                        $icone = 'fa-arrow-up';
+                                        $descricao = 'Entrada de produtos';
+                                        $valorClasse = 'positive';
+                                        $valorFormatado = '+' . $qtd;
+                                    } elseif ($tipo === 'retirada') {
+                                        $classeIcone = 'out';
+                                        $icone = 'fa-arrow-down';
+                                        $descricao = 'Saída de produtos';
+                                        $valorClasse = 'negative';
+                                        $valorFormatado = '-' . $qtd;
+                                    } else {
+                                        $classeIcone = 'in';
+                                        $icone = 'fa-sliders';
+                                        $descricao = 'Ajustado para ' . $qtd;
+                                        $valorClasse = '';
+                                        $valorFormatado = $qtd;
+                                    }
+                                ?>
+                                <li class="movement-item">
+                                    <div class="movement-info">
+                                        <div class="movement-icon <?= $classeIcone ?>">
+                                            <i class="fa-solid <?= $icone ?>"></i>
+                                        </div>
+                                        <div class="movement-details">
+                                            <strong><?= htmlspecialchars($mov['nomeProduto']) ?></strong>
+                                            <span><?= $descricao ?></span>
+                                        </div>
+                                    </div>
+                                    <span class="movement-value <?= $valorClasse ?>"><?= $valorFormatado ?></span>
+                                </li>
+                            <?php endforeach; ?>
+                        <?php endif; ?>
                     </ul>
                 </div>
             </div>
@@ -94,7 +177,7 @@ $idUsuario = $_SESSION['idUsuario'];
                     <div class="icon-box">
                         <i class="fa-solid fa-box"></i>
                     </div>
-                    <div class="number">120</div>
+                    <div class="number"><?= $totalProdutos ?></div>
                     <div class="label">Total de Produtos</div>
                 </div>
 
@@ -102,7 +185,7 @@ $idUsuario = $_SESSION['idUsuario'];
                     <div class="icon-box">
                         <i class="fa-solid fa-boxes-stacked"></i>
                     </div>
-                    <div class="number">520</div>
+                    <div class="number"><?= $produtosEmEstoque ?></div>
                     <div class="label">Produtos em Estoque</div>
                 </div>
 
@@ -110,7 +193,7 @@ $idUsuario = $_SESSION['idUsuario'];
                     <div class="icon-box">
                         <i class="fa-solid fa-triangle-exclamation"></i>
                     </div>
-                    <div class="number">8</div>
+                    <div class="number"><?= $estoqueBaixo ?></div>
                     <div class="label">Estoque Baixo</div>
                 </div>
 
@@ -118,7 +201,7 @@ $idUsuario = $_SESSION['idUsuario'];
                     <div class="icon-box">
                         <i class="fa-solid fa-circle-exclamation"></i>
                     </div>
-                    <div class="number">109</div>
+                    <div class="number"><?= $estoqueZerado ?></div>
                     <div class="label">Estoque Zerado</div>
                 </div>
 
@@ -166,27 +249,33 @@ $idUsuario = $_SESSION['idUsuario'];
                     </tr>
                 </thead>
                 <tbody>
-                    <tr>
-                        <td>#PRD-0012</td>
-                        <td><strong>PRODUTO3</strong></td>
-                        <td>Eletrônicos</td>
-                        <td>0 Unid.</td>
-                        <td><span class="status-badge red">Zerado</span></td>
-                    </tr>
-                    <tr>
-                        <td>#PRD-0045</td>
-                        <td><strong>PRODUTO8</strong></td>
-                        <td>Acessórios</td>
-                        <td>2 Unid.</td>
-                        <td><span class="status-badge yellow">Estoque Baixo</span></td>
-                    </tr>
-                    <tr>
-                        <td>#PRD-0089</td>
-                        <td><strong>PRODUTO15</strong></td>
-                        <td>Informática</td>
-                        <td>0 Unid.</td>
-                        <td><span class="status-badge red">Zerado</span></td>
-                    </tr>
+                    <?php if (empty($itensCriticos)): ?>
+                        <tr>
+                            <td colspan="5" style="text-align: center; padding: 15px;">
+                                Nenhum item em estado crítico no momento.
+                            </td>
+                        </tr>
+                    <?php else: ?>
+                        <?php foreach ($itensCriticos as $item): ?>
+                            <?php 
+                                $qtdItem = (int)$item['estoqueProduto'];
+                                if ($qtdItem == 0) {
+                                    $badgeCor = 'red';
+                                    $badgeTexto = 'Zerado';
+                                } else {
+                                    $badgeCor = 'yellow';
+                                    $badgeTexto = 'Estoque Baixo';
+                                }
+                            ?>
+                            <tr>
+                                <td>#<?= htmlspecialchars($item['codigoBarras']) ?></td>
+                                <td><strong><?= htmlspecialchars($item['nomeProduto']) ?></strong></td>
+                                <td><?= htmlspecialchars($item['nomeCategoria'] ?? 'Sem Categoria') ?></td>
+                                <td><?= $qtdItem ?> Unid.</td>
+                                <td><span class="status-badge <?= $badgeCor ?>"><?= $badgeTexto ?></span></td>
+                            </tr>
+                        <?php endforeach; ?>
+                    <?php endif; ?>
                 </tbody>
             </table>
         </div>

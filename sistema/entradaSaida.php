@@ -7,6 +7,27 @@ if (!isset($_SESSION['idUsuario'])) {
 }
 
 $idUsuario = (int)$_SESSION['idUsuario'];
+
+require_once '../conecta/conecta.php';
+
+// Consulta para buscar as movimentações do usuário e o nome do produto vinculado
+$sql = "SELECT es.isEntradaSaida, es.tipoEntradaSaida, es.quantidadeEntradaSaida, p.nomeProduto
+        FROM tb_entradasaida es
+        INNER JOIN tb_produtos p ON es.idProduto = p.idProduto
+        WHERE es.idUsuario = ?
+        ORDER BY es.isEntradaSaida DESC";
+
+$stmt = $conn->prepare($sql);
+$stmt->bind_param("i", $idUsuario);
+$stmt->execute();
+$resultado = $stmt->get_result();
+
+$movimentacoes = [];
+while ($row = $resultado->fetch_assoc()) {
+    $movimentacoes[] = $row;
+}
+
+$stmt->close();
 ?>
 
 <!DOCTYPE html>
@@ -28,7 +49,7 @@ $idUsuario = (int)$_SESSION['idUsuario'];
         <div class="search-filter-container">
             <div class="search-box">
                 <i class="fa-solid fa-magnifying-glass"></i>
-                <input type="text" id="input-pesquisa" placeholder="pesquisar produto...">
+                <input type="text" id="input-pesquisa" placeholder="pesquisar produto ou tipo de movimentação...">
             </div>
 
             <div class="filter-dropdown-container">
@@ -63,176 +84,159 @@ $idUsuario = (int)$_SESSION['idUsuario'];
             <h2 class="movements-title">ENTRADAS E RETIRADAS DO ESTOQUE</h2>
 
             <div class="movement-list">
-                
-                <!-- Item 1: Entrada -->
-                <div class="movement-item entry">
-                    <div class="movement-info">
-                        <div class="movement-icon">
-                            <i class="fa-solid fa-arrow-up"></i>
-                        </div>
-                        <div class="movement-details">
-                            <h4>PRODUTO1</h4>
-                            <p>Entrada de produtos</p>
-                        </div>
-                    </div>
-                    <div class="movement-value">+100</div>
-                </div>
+                <?php if (empty($movimentacoes)): ?>
+                    <p class="no-results-msg" style="text-align: center; padding: 20px; color: #666;">Nenhuma movimentação registrada.</p>
+                <?php else: ?>
+                    <?php foreach ($movimentacoes as $mov): ?>
+                        <?php 
+                            $tipo = $mov['tipoEntradaSaida'];
+                            $qtd = (int)$mov['quantidadeEntradaSaida'];
 
-                <!-- Item 2: Saída -->
-                <div class="movement-item exit">
-                    <div class="movement-info">
-                        <div class="movement-icon">
-                            <i class="fa-solid fa-arrow-down"></i>
+                            if ($tipo === 'adicionar') {
+                                $catFiltro = 'entrada';
+                                $classe = 'entry';
+                                $icone = 'fa-arrow-up';
+                                $descricao = 'Entrada de produtos';
+                                $valorFormatado = '+' . $qtd;
+                            } elseif ($tipo === 'retirada') {
+                                $catFiltro = 'saida';
+                                $classe = 'exit';
+                                $icone = 'fa-arrow-down';
+                                $descricao = 'Saída de produtos';
+                                $valorFormatado = '-' . $qtd;
+                            } else {
+                                $catFiltro = 'entrada';
+                                $classe = 'entry';
+                                $icone = 'fa-sliders';
+                                $descricao = 'Ajustado para ' . $qtd;
+                                $valorFormatado = $qtd;
+                            }
+                        ?>
+                        <div class="movement-item <?= $classe ?>" data-tipo="<?= $catFiltro ?>">
+                            <div class="movement-info">
+                                <div class="movement-icon">
+                                    <i class="fa-solid <?= $icone ?>"></i>
+                                </div>
+                                <div class="movement-details">
+                                    <h4><?= htmlspecialchars($mov['nomeProduto']) ?></h4>
+                                    <p><?= htmlspecialchars($descricao) ?></p>
+                                </div>
+                            </div>
+                            <div class="movement-value"><?= $valorFormatado ?></div>
                         </div>
-                        <div class="movement-details">
-                            <h4>PRODUTO2</h4>
-                            <p>Saída de produtos</p>
-                        </div>
-                    </div>
-                    <div class="movement-value">-50</div>
-                </div>
+                    <?php endforeach; ?>
+                <?php endif; ?>
 
-                <!-- Item 3: Saída -->
-                <div class="movement-item exit">
-                    <div class="movement-info">
-                        <div class="movement-icon">
-                            <i class="fa-solid fa-arrow-down"></i>
-                        </div>
-                        <div class="movement-details">
-                            <h4>PRODUTO3</h4>
-                            <p>Saída de produtos</p>
-                        </div>
-                    </div>
-                    <div class="movement-value">-150</div>
-                </div>
-
-                <!-- Item 4: Entrada -->
-                <div class="movement-item entry">
-                    <div class="movement-info">
-                        <div class="movement-icon">
-                            <i class="fa-solid fa-arrow-up"></i>
-                        </div>
-                        <div class="movement-details">
-                            <h4>PRODUTO4</h4>
-                            <p>Entrada de produtos</p>
-                        </div>
-                    </div>
-                    <div class="movement-value">+250</div>
-                </div>
-
-                <!-- Item 5: Entrada -->
-                <div class="movement-item entry">
-                    <div class="movement-info">
-                        <div class="movement-icon">
-                            <i class="fa-solid fa-arrow-up"></i>
-                        </div>
-                        <div class="movement-details">
-                            <h4>PRODUTO5</h4>
-                            <p>Entrada de produtos</p>
-                        </div>
-                    </div>
-                    <div class="movement-value">+10</div>
-                </div>
-
+                <!-- Mensagem dinâmica caso a pesquisa não encontre correspondências -->
+                <p id="mensagem-sem-resultados" style="text-align: center; padding: 25px; color: #777; font-weight: 600; display: none;">
+                    Nenhum produto ou movimentação encontrada.
+                </p>
             </div>
         </div>
 
     </main>
 
     <footer class="footer">
-        <p>© <?php echo date('Y'); ?> controlStoke — Sistema de Controle de Estoque[cite: 2]</p>
+        <p>© <?php echo date('Y'); ?> controlStoke — Sistema de Controle de Estoque</p>
         <p><a href="politica.php">Política de Privacidade</a></p>
     </footer>
 
     <script>
         document.addEventListener('DOMContentLoaded', function() {
-    const searchInput = document.getElementById('input-pesquisa');
-    const btnFilter = document.getElementById('btn-toggle-filter');
-    const filterMenu = document.getElementById('filter-menu');
-    const filterItems = document.querySelectorAll('.filter-dropdown-item');
-    const movementList = document.querySelector('.movement-list');
+            const searchInput = document.getElementById('input-pesquisa');
+            const btnFilter = document.getElementById('btn-toggle-filter');
+            const filterMenu = document.getElementById('filter-menu');
+            const filterItems = document.querySelectorAll('.filter-dropdown-item');
+            const movementList = document.querySelector('.movement-list');
+            const msgSemResultados = document.getElementById('mensagem-sem-resultados');
 
-    let currentTypeFilter = 'todos'; // todos | entradas | saidas
+            let currentTypeFilter = 'todos';
 
-    // Toggle Dropdown de Filtros
-    btnFilter.addEventListener('click', function(e) {
-        e.stopPropagation();
-        filterMenu.classList.toggle('active');
-    });
+            // Menu Dropdown de Filtro
+            btnFilter.addEventListener('click', function(e) {
+                e.stopPropagation();
+                filterMenu.classList.toggle('active');
+            });
 
-    // Fechar dropdown ao clicar fora
-    document.addEventListener('click', function(e) {
-        if (!filterMenu.contains(e.target) && !btnFilter.contains(e.target)) {
-            filterMenu.classList.remove('active');
-        }
-    });
+            document.addEventListener('click', function(e) {
+                if (!filterMenu.contains(e.target) && !btnFilter.contains(e.target)) {
+                    filterMenu.classList.remove('active');
+                }
+            });
 
-    // Aplicação dos Filtros e Ordenação
-    filterItems.forEach(item => {
-        item.addEventListener('click', function() {
-            const filterType = this.getAttribute('data-filter');
-            const sortType = this.getAttribute('data-sort');
+            filterItems.forEach(item => {
+                item.addEventListener('click', function() {
+                    const filterType = this.getAttribute('data-filter');
+                    const sortType = this.getAttribute('data-sort');
 
-            if (filterType) {
-                // Atualizar estado do filtro do tipo (Todos, Entradas, Saídas)
-                document.querySelectorAll('[data-filter]').forEach(i => i.classList.remove('active'));
-                this.classList.add('active');
-                currentTypeFilter = filterType;
-                applyFilters();
+                    if (filterType) {
+                        document.querySelectorAll('[data-filter]').forEach(i => i.classList.remove('active'));
+                        this.classList.add('active');
+                        currentTypeFilter = filterType;
+                        applyFilters();
+                    }
+
+                    if (sortType) {
+                        sortList(sortType);
+                    }
+
+                    filterMenu.classList.remove('active');
+                });
+            });
+
+            // Aplica os filtros de texto e tipo
+            function applyFilters() {
+                const query = searchInput.value.toLowerCase().trim();
+                const items = document.querySelectorAll('.movement-item');
+                let visiveis = 0;
+
+                items.forEach(item => {
+                    const productName = item.querySelector('h4') ? item.querySelector('h4').textContent.toLowerCase() : '';
+                    const productDesc = item.querySelector('p') ? item.querySelector('p').textContent.toLowerCase() : '';
+                    const tipoMov = item.getAttribute('data-tipo');
+
+                    // Procura tanto no NOME do produto quanto na DESCRIÇÃO
+                    const matchesSearch = productName.includes(query) || productDesc.includes(query);
+                    let matchesType = true;
+
+                    if (currentTypeFilter === 'entradas' && tipoMov !== 'entrada') matchesType = false;
+                    if (currentTypeFilter === 'saidas' && tipoMov !== 'saida') matchesType = false;
+
+                    if (matchesSearch && matchesType) {
+                        item.style.display = 'flex';
+                        visiveis++;
+                    } else {
+                        item.style.display = 'none';
+                    }
+                });
+
+                // Exibe a mensagem de aviso caso nenhum item seja visível
+                if (msgSemResultados) {
+                    msgSemResultados.style.display = (visiveis === 0 && items.length > 0) ? 'block' : 'none';
+                }
             }
 
-            if (sortType) {
-                sortList(sortType);
+            // Ordenação A-Z / Z-A
+            function sortList(direction) {
+                const items = Array.from(document.querySelectorAll('.movement-item'));
+
+                items.sort((a, b) => {
+                    const nameA = a.querySelector('h4').textContent.toLowerCase();
+                    const nameB = b.querySelector('h4').textContent.toLowerCase();
+
+                    if (direction === 'az') return nameA.localeCompare(nameB);
+                    if (direction === 'za') return nameB.localeCompare(nameA);
+                    return 0;
+                });
+
+                items.forEach(item => {
+                    movementList.insertBefore(item, msgSemResultados);
+                });
             }
 
-            filterMenu.classList.remove('active');
+            // Evento para filtrar em tempo real ao digitar
+            searchInput.addEventListener('input', applyFilters);
         });
-    });
-
-    // Filtra por Nome e por Tipo (Entrada/Saída)
-    function applyFilters() {
-        const query = searchInput.value.toLowerCase().trim();
-        const items = document.querySelectorAll('.movement-item');
-
-        items.forEach(item => {
-            const productName = item.querySelector('h4').textContent.toLowerCase();
-            const isEntry = item.classList.contains('entry');
-            const isExit = item.classList.contains('exit');
-
-            let matchesSearch = productName.includes(query);
-            let matchesType = true;
-
-            if (currentTypeFilter === 'entradas' && !isEntry) matchesType = false;
-            if (currentTypeFilter === 'saidas' && !isExit) matchesType = false;
-
-            if (matchesSearch && matchesType) {
-                item.style.display = 'flex';
-            } else {
-                item.style.display = 'none';
-            }
-        });
-    }
-
-    // Ordenação A-Z / Z-A
-    function sortList(direction) {
-        const items = Array.from(document.querySelectorAll('.movement-item'));
-
-        items.sort((a, b) => {
-            const nameA = a.querySelector('h4').textContent.toLowerCase();
-            const nameB = b.querySelector('h4').textContent.toLowerCase();
-
-            if (direction === 'az') return nameA.localeCompare(nameB);
-            if (direction === 'za') return nameB.localeCompare(nameA);
-            return 0;
-        });
-
-        // Reorganiza elementos no DOM
-        items.forEach(item => movementList.appendChild(item));
-    }
-
-    // Evento na pesquisa por texto
-    searchInput.addEventListener('input', applyFilters);
-});
     </script>
 </body>
 </html>

@@ -1,12 +1,122 @@
 <?php
 session_start();
 
-if (!isset($_SESSION['id'])) {
+// 1. Verifica se o usuário está logado
+if (!isset($_SESSION['idUsuario'])) {
     header("Location: ../login.php");
     exit();
 }
 
-$idUsuario = (int)$_SESSION['id'];
+$idUsuario = (int)$_SESSION['idUsuario'];
+require_once '../conecta/conecta.php';
+
+$mensagemErro = '';
+$mensagemSucesso = '';
+
+// ==========================================
+// 2. PROCESSAMENTO DO FORMULÁRIO (POST)
+// ==========================================
+if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    $idProduto = isset($_POST['id_produto']) ? (int)$_POST['id_produto'] : 0;
+    $tipoOpcao = isset($_POST['tipo_opcao']) ? trim($_POST['tipo_opcao']) : '';
+    $qtdInformada = isset($_POST['atualizar_estoque']) ? (int)$_POST['atualizar_estoque'] : 0;
+
+    if ($idProduto <= 0 || empty($tipoOpcao) || $qtdInformada < 0) {
+        $mensagemErro = "Dados inválidos. Preencha todos os campos corretamente.";
+    } else {
+        // Inicia transação SQL
+        $conn->begin_transaction();
+
+        try {
+            // Consulta o estoque atual e trava a linha para atualização (FOR UPDATE)
+            $sqlBusca = "SELECT estoqueProduto FROM tb_produtos WHERE idProduto = ? AND idUsuario = ? FOR UPDATE";
+            $stmtBusca = $conn->prepare($sqlBusca);
+            $stmtBusca->bind_param("ii", $idProduto, $idUsuario);
+            $stmtBusca->execute();
+            $resBusca = $stmtBusca->get_result();
+
+            if ($resBusca->num_rows === 0) {
+                throw new Exception("Produto não encontrado.");
+            }
+
+            $produtoAtual = $resBusca->fetch_assoc();
+            $estoqueAtual = (int)$produtoAtual['estoqueProduto'];
+            $stmtBusca->close();
+
+            $novoEstoque = $estoqueAtual;
+            $qtdMovimentada = $qtdInformada;
+
+            // Lógica do novo estoque e quantidade movimentada
+            if ($tipoOpcao === 'adicionar') {
+                $novoEstoque = $estoqueAtual + $qtdInformada;
+                $qtdMovimentada = $qtdInformada;
+            } elseif ($tipoOpcao === 'retirada') {
+                if ($qtdInformada > $estoqueAtual) {
+                    throw new Exception("Estoque insuficiente para esta retirada.");
+                }
+                $novoEstoque = $estoqueAtual - $qtdInformada;
+                $qtdMovimentada = $qtdInformada;
+            } elseif ($tipoOpcao === 'ajustar') {
+                $novoEstoque = $qtdInformada;
+                $qtdMovimentada = $qtdInformada; // Salva o novo valor final diretamente (ex: 49)
+            } else {
+                throw new Exception("Opção de movimentação inválida.");
+            }
+
+            // Update em tb_produtos
+            $sqlUpdate = "UPDATE tb_produtos SET estoqueProduto = ? WHERE idProduto = ? AND idUsuario = ?";
+            $stmtUpdate = $conn->prepare($sqlUpdate);
+            $stmtUpdate->bind_param("iii", $novoEstoque, $idProduto, $idUsuario);
+            $stmtUpdate->execute();
+            $stmtUpdate->close();
+
+            // Insert em tb_entradasaida
+            $sqlInsert = "INSERT INTO tb_entradasaida (tipoEntradaSaida, quantidadeEntradaSaida, idUsuario, idProduto) 
+                          VALUES (?, ?, ?, ?)";
+            $stmtInsert = $conn->prepare($sqlInsert);
+            $stmtInsert->bind_param("siii", $tipoOpcao, $qtdMovimentada, $idUsuario, $idProduto);
+            $stmtInsert->execute();
+            $stmtInsert->close();
+
+            // Confirma alterações no banco
+            $conn->commit();
+
+            // Redireciona de volta para a lista de estoque
+            header("Location: exibirEstoque.php?sucesso=1");
+            exit();
+
+        } catch (Exception $e) {
+            $conn->rollback();
+            $mensagemErro = $e->getMessage();
+        }
+    }
+}
+
+// ==========================================
+// 3. CARREGAMENTO DOS DADOS DO PRODUTO (GET)
+// ==========================================
+$idProduto = isset($_GET['id']) ? (int)$_GET['id'] : (isset($_POST['id_produto']) ? (int)$_POST['id_produto'] : 0);
+
+if ($idProduto <= 0) {
+    header("Location: exibirEstoque.php");
+    exit();
+}
+
+$sql = "SELECT idProduto, nomeProduto, codigoBarras, estoqueProduto 
+        FROM tb_produtos 
+        WHERE idProduto = ? AND idUsuario = ?";
+$stmt = $conn->prepare($sql);
+$stmt->bind_param("ii", $idProduto, $idUsuario);
+$stmt->execute();
+$resultado = $stmt->get_result();
+
+if ($resultado->num_rows === 0) {
+    header("Location: exibirEstoque.php");
+    exit();
+}
+
+$produto = $resultado->fetch_assoc();
+$stmt->close();
 ?>
 
 <!DOCTYPE html>
@@ -33,33 +143,41 @@ $idUsuario = (int)$_SESSION['id'];
                 <h2>ALTERAR/ENTRADA ESTOQUE</h2>
             </div>
 
-            <form action="processa_movimentacao.php" method="POST" class="product-form" id="form-altera-estoque">
+            <?php if (!empty($mensagemErro)): ?>
+                <div style="background-color: #f8d7da; color: #721c24; padding: 10px; border-radius: 5px; margin-bottom: 15px; text-align: center;">
+                    <?= htmlspecialchars($mensagemErro) ?>
+                </div>
+            <?php endif; ?>
+
+            <form action="<?= htmlspecialchars($_SERVER['PHP_SELF']) . '?id=' . $produto['idProduto'] ?>" method="POST" class="product-form" id="form-altera-estoque">
                 
-                <!-- Campos Bloqueados (Não Editáveis) - Lado a Lado -->
+                <input type="hidden" name="id_produto" value="<?= $produto['idProduto'] ?>">
+
+                <!-- Campos Bloqueados -->
                 <div class="form-row-2col">
                     <div class="form-group">
                         <label for="nome_produto">NOME PRODUTO</label>
-                        <input type="text" id="nome_produto" name="nome_produto" value="PRODUTO1" readonly>
+                        <input type="text" id="nome_produto" value="<?= htmlspecialchars($produto['nomeProduto']) ?>" readonly>
                     </div>
 
                     <div class="form-group">
                         <label for="codigo_barras">CÓDIGO BARRAS</label>
-                        <input type="text" id="codigo_barras" name="codigo_barras" value="7891234567890" readonly>
+                        <input type="text" id="codigo_barras" value="<?= htmlspecialchars($produto['codigoBarras']) ?>" readonly>
                     </div>
                 </div>
 
                 <div class="form-group">
                     <label for="estoque_atual">ESTOQUE ATUAL</label>
-                    <input type="text" id="estoque_atual" name="estoque_atual" value="250" readonly>
+                    <input type="text" id="estoque_atual" value="<?= (int)$produto['estoqueProduto'] ?>" readonly>
                 </div>
 
                 <hr class="form-divider">
 
-                <!-- Campos Editáveis (Abaixo da Linha) -->
+                <!-- Campos Editáveis -->
                 <div class="form-group">
-                    <label for="tipo_opcao">ESCOLHA UM OPÇÃO</label>
+                    <label for="tipo_opcao">ESCOLHA UMA OPÇÃO</label>
                     <select id="tipo_opcao" name="tipo_opcao" required>
-                        <option value="" disabled selected>NENHUMA OPÇÃO SELECIONA</option>
+                        <option value="" disabled selected>NENHUMA OPÇÃO SELECIONADA</option>
                         <option value="adicionar">ADICIONAR</option>
                         <option value="retirada">RETIRADA</option>
                         <option value="ajustar">AJUSTAR</option>
@@ -67,7 +185,7 @@ $idUsuario = (int)$_SESSION['id'];
                 </div>
 
                 <div class="form-group">
-                    <label for="atualizar_estoque">ATUALIZAR ESTOQUE</label>
+                    <label for="atualizar_estoque">QUANTIDADE</label>
                     <input type="number" id="atualizar_estoque" name="atualizar_estoque" value="0" min="0" required>
                 </div>
 
@@ -81,7 +199,7 @@ $idUsuario = (int)$_SESSION['id'];
     </main>
 
     <footer class="footer">
-        <p>© <?php echo date('Y'); ?> controlStoke — Sistema de Controle de Estoque[cite: 2]</p>
+        <p>© <?php echo date('Y'); ?> controlStoke — Sistema de Controle de Estoque</p>
         <p><a href="politica.php">Política de Privacidade</a></p>
     </footer>
 

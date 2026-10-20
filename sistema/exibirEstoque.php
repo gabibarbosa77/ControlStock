@@ -7,6 +7,53 @@ if (!isset($_SESSION['idUsuario'])) {
 }
 
 $idUsuario = (int)$_SESSION['idUsuario'];
+
+require_once '../conecta/conecta.php';
+
+// 1. Consulta SQL para listar produtos e nome da categoria vinculada
+$sqlProdutos = "SELECT p.idProduto, p.nomeProduto, p.codigoBarras, p.estoqueProduto, 
+                       p.precoProduto, p.estoqueMinimo, c.nomeCategoria
+                FROM tb_produtos p
+                LEFT JOIN tb_categoria c ON p.idCategoria = c.idCategoria
+                WHERE p.idUsuario = ?
+                ORDER BY p.nomeProduto ASC";
+
+$stmt = $conn->prepare($sqlProdutos);
+$stmt->bind_param("i", $idUsuario);
+$stmt->execute();
+$resultado = $stmt->get_result();
+
+$produtos = [];
+$totalProdutos = 0;
+$estoqueBaixo = 0;
+$estoqueZerado = 0;
+
+// 2. Processa as métricas e prepara a lista de produtos
+while ($row = $resultado->fetch_assoc()) {
+    $totalProdutos++;
+    $qtd = (int)$row['estoqueProduto'];
+    $min = (int)$row['estoqueMinimo'];
+
+    // Lógica das cores das bolinhas e contadores de métricas
+    if ($qtd == 0) {
+        $corStatus = 'red';
+        $textoStatus = 'Estoque Zerado';
+        $estoqueZerado++;
+    } elseif ($qtd <= $min) {
+        $corStatus = 'orange';
+        $textoStatus = 'Estoque Baixo';
+        $estoqueBaixo++;
+    } else {
+        $corStatus = 'green';
+        $textoStatus = 'Estoque Normal';
+    }
+
+    $row['corStatus'] = $corStatus;
+    $row['textoStatus'] = $textoStatus;
+    $produtos[] = $row;
+}
+
+$stmt->close();
 ?>
 
 <!DOCTYPE html>
@@ -67,7 +114,7 @@ $idUsuario = (int)$_SESSION['idUsuario'];
                 <div class="icon-box">
                     <i class="fa-solid fa-box"></i>
                 </div>
-                <div class="number">120</div>
+                <div class="number"><?= $totalProdutos ?></div>
                 <div class="label">PRODUTOS</div>
             </div>
 
@@ -75,7 +122,7 @@ $idUsuario = (int)$_SESSION['idUsuario'];
                 <div class="icon-box">
                     <i class="fa-solid fa-triangle-exclamation"></i>
                 </div>
-                <div class="number">8</div>
+                <div class="number"><?= $estoqueBaixo ?></div>
                 <div class="label">ESTOQUE BAIXO</div>
             </div>
 
@@ -83,7 +130,7 @@ $idUsuario = (int)$_SESSION['idUsuario'];
                 <div class="icon-box">
                     <i class="fa-solid fa-circle-exclamation"></i>
                 </div>
-                <div class="number">109</div>
+                <div class="number"><?= $estoqueZerado ?></div>
                 <div class="label">ESTOQUE ZERADO</div>
             </div>
         </div>
@@ -106,69 +153,39 @@ $idUsuario = (int)$_SESSION['idUsuario'];
                     </tr>
                 </thead>
                 <tbody id="stock-tbody">
-                    <tr>
-                        <td><strong>PRODUTO1</strong></td>
-                        <td>7891234567890</td>
-                        <td>BEBIDA C. ALCOOL</td>
-                        <td>R$00,00</td>
-                        <td>250</td>
-                        <td><span class="stock-status-dot green" title="Estoque Normal"></span></td>
-                        <td>
-                            <div class="table-actions">
-                                <button class="action-icon-btn delete" onclick="openDeleteModal('PRODUTO1')" title="Excluir">
-                                    <i class="fa-regular fa-trash-can"></i>
-                                </button>
-                                <a href="alteraProduto.php?id=1" class="action-icon-btn edit" title="Alterar Produto">
-                                    <i class="fa-regular fa-pen-to-square"></i>
-                                </a>
-                                <a href="alteraEstoque.php?id=1" class="action-icon-btn box" title="Alterar/Entrada Estoque">
-                                    <i class="fa-solid fa-box-open"></i>
-                                </a>
-                            </div>
-                        </td>
-                    </tr>
-                    <tr>
-                        <td><strong>PRODUTO2</strong></td>
-                        <td>7899876543210</td>
-                        <td>BEBIDA S. ALCOOL</td>
-                        <td>R$00,00</td>
-                        <td>50</td>
-                        <td><span class="stock-status-dot orange" title="Estoque Baixo"></span></td>
-                        <td>
-                            <div class="table-actions">
-                                <button class="action-icon-btn delete" onclick="openDeleteModal('PRODUTO2')" title="Excluir">
-                                    <i class="fa-regular fa-trash-can"></i>
-                                </button>
-                                <a href="alteraProduto.php?id=2" class="action-icon-btn edit" title="Alterar Produto">
-                                    <i class="fa-regular fa-pen-to-square"></i>
-                                </a>
-                                <a href="alteraEstoque.php?id=2" class="action-icon-btn box" title="Alterar/Entrada Estoque">
-                                    <i class="fa-solid fa-box-open"></i>
-                                </a>
-                            </div>
-                        </td>
-                    </tr>
-                    <tr>
-                        <td><strong>PRODUTO3</strong></td>
-                        <td>7890876543210</td>
-                        <td>DOCE</td>
-                        <td>R$00,00</td>
-                        <td>0</td>
-                        <td><span class="stock-status-dot red" title="Estoque Zerado"></span></td>
-                        <td>
-                            <div class="table-actions">
-                                <button class="action-icon-btn delete" onclick="openDeleteModal('PRODUTO3')" title="Excluir">
-                                    <i class="fa-regular fa-trash-can"></i>
-                                </button>
-                                <a href="alteraProduto.php?id=3" class="action-icon-btn edit" title="Alterar Produto">
-                                    <i class="fa-regular fa-pen-to-square"></i>
-                                </a>
-                                <a href="alteraEstoque.php?id=3" class="action-icon-btn box" title="Alterar/Entrada Estoque">
-                                    <i class="fa-solid fa-box-open"></i>
-                                </a>
-                            </div>
-                        </td>
-                    </tr>
+                    <?php if (empty($produtos)): ?>
+                        <tr>
+                            <td colspan="7" style="text-align: center; padding: 20px;">Nenhum produto cadastrado.</td>
+                        </tr>
+                    <?php else: ?>
+                        <?php foreach ($produtos as $prod): ?>
+                            <tr>
+                                <td><strong><?= htmlspecialchars($prod['nomeProduto']) ?></strong></td>
+                                <td><?= htmlspecialchars($prod['codigoBarras']) ?></td>
+                                <td><?= htmlspecialchars($prod['nomeCategoria'] ?? 'Sem Categoria') ?></td>
+                                <td>R$ <?= number_format($prod['precoProduto'], 2, ',', '.') ?></td>
+                                <td><?= (int)$prod['estoqueProduto'] ?></td>
+                                <td>
+                                    <span class="stock-status-dot <?= $prod['corStatus'] ?>" title="<?= $prod['textoStatus'] ?>"></span>
+                                </td>
+                                <td>
+                                    <div class="table-actions">
+                                        <button class="action-icon-btn delete" 
+                                                onclick="openDeleteModal(<?= (int)$prod['idProduto'] ?>, '<?= htmlspecialchars($prod['nomeProduto'], ENT_QUOTES) ?>')" 
+                                                title="Excluir">
+                                            <i class="fa-regular fa-trash-can"></i>
+                                        </button>
+                                        <a href="alteraProduto.php?id=<?= (int)$prod['idProduto'] ?>" class="action-icon-btn edit" title="Alterar Produto">
+                                            <i class="fa-regular fa-pen-to-square"></i>
+                                        </a>
+                                        <a href="alteraEstoque.php?id=<?= (int)$prod['idProduto'] ?>" class="action-icon-btn box" title="Alterar/Entrada Estoque">
+                                            <i class="fa-solid fa-box-open"></i>
+                                        </a>
+                                    </div>
+                                </td>
+                            </tr>
+                        <?php endforeach; ?>
+                    <?php endif; ?>
                 </tbody>
             </table>
         </div>
@@ -181,17 +198,21 @@ $idUsuario = (int)$_SESSION['idUsuario'];
             <button class="modal-close-btn" onclick="closeDeleteModal()"><i class="fa-solid fa-xmark"></i></button>
             <h3 class="modal-title">EXCLUIR PRODUTO</h3>
             <p class="modal-text">
-                TEM CERTEZA QUE DESEJA EXCLUIR <span id="nome-produto-modal">PRODUTO</span>? NÃO SERÁ POSSÍVEL RESTAURAR APÓS EXCLUSÃO
+                TEM CERTEZA QUE DESEJA EXCLUIR <span id="nome-produto-modal">PRODUTO</span>? NÃO SERÁ POSSÍVEL RESTAURAR APÓS EXCLUSÃO.
             </p>
-            <button class="btn-confirm-delete" onclick="confirmDelete()">
-                <i class="fa-regular fa-trash-can"></i>
-                <span>EXCLUIR</span>
-            </button>
+
+            <form action="excluirProduto.php" method="POST">
+                <input type="hidden" name="id_produto" id="id_produto_delete">
+                <button type="submit" class="btn-confirm-delete">
+                    <i class="fa-regular fa-trash-can"></i>
+                    <span>EXCLUIR</span>
+                </button>
+            </form>
         </div>
     </div>
 
     <footer class="footer">
-        <p>© <?php echo date('Y'); ?> controlStoke — Sistema de Controle de Estoque[cite: 2]</p>
+        <p>© <?php echo date('Y'); ?> controlStoke — Sistema de Controle de Estoque</p>
         <p><a href="../politica.php">Política de Privacidade</a></p>
     </footer>
 
@@ -199,19 +220,16 @@ $idUsuario = (int)$_SESSION['idUsuario'];
         /* Modais */
         const modal = document.getElementById('modal-excluir');
         const nomeProdutoSpan = document.getElementById('nome-produto-modal');
+        const inputIdDelete = document.getElementById('id_produto_delete');
 
-        function openDeleteModal(nomeProduto) {
+        function openDeleteModal(idProduto, nomeProduto) {
+            inputIdDelete.value = idProduto;
             nomeProdutoSpan.textContent = nomeProduto;
             modal.classList.add('active');
         }
 
         function closeDeleteModal() {
             modal.classList.remove('active');
-        }
-
-        function confirmDelete() {
-            alert('Ação enviada para o banco de dados!');
-            closeDeleteModal();
         }
 
         modal.addEventListener('click', function(e) {
@@ -271,6 +289,8 @@ $idUsuario = (int)$_SESSION['idUsuario'];
                 const rows = document.querySelectorAll('#stock-tbody tr');
 
                 rows.forEach(row => {
+                    if (row.cells.length < 7) return; // Ignora linha de mensagem vazia
+
                     const productName = row.cells[0].textContent.toLowerCase();
                     const barcode = row.cells[1].textContent.toLowerCase();
                     const category = row.cells[2].textContent.toLowerCase();
@@ -293,6 +313,8 @@ $idUsuario = (int)$_SESSION['idUsuario'];
 
             function sortTable(direction) {
                 const rows = Array.from(document.querySelectorAll('#stock-tbody tr'));
+
+                if (rows.length === 1 && rows[0].cells.length < 7) return;
 
                 rows.sort((a, b) => {
                     const nameA = a.cells[0].textContent.toLowerCase();

@@ -40,10 +40,11 @@ if (isset($_GET['erro'])) {
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Cadastro - controlStoke</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="css/style.css">
 </head>
-<body class="login-body">
+<body class="login-body d-flex align-items-center justify-content-center p-3">
 
     <div class="login-card">
         <div class="login-header">
@@ -63,38 +64,38 @@ if (isset($_GET['erro'])) {
 
         <form action="cadastraUsuario.php" method="POST">
             
-            <div class="form-group">
-                <label for="nomeCompleto">NOME COMPLETO</label>
+            <div class="form-group mb-3">
+                <label for="nomeCompleto" class="form-label">NOME COMPLETO</label>
                 <div class="input-container">
-                    <input type="text" id="nomeCompleto" name="nomeCompleto" placeholder="Digite seu nome completo" required autocomplete="off">
+                    <input type="text" id="nomeCompleto" name="nomeCompleto" class="form-control" placeholder="Digite seu nome completo" required autocomplete="off">
                 </div>
             </div>
 
-            <div class="form-group">
-                <label for="cpf">CPF</label>
+            <div class="form-group mb-3">
+                <label for="cpf" class="form-label">CPF</label>
                 <div class="input-container">
-                    <input type="text" id="cpf" name="cpf" placeholder="Digite seu CPF" maxlength="14" required autocomplete="off">
+                    <input type="text" id="cpf" name="cpf" class="form-control" placeholder="Digite seu CPF" maxlength="14" required autocomplete="off">
                 </div>
             </div>
 
-            <div class="form-group">
-                <label for="email">EMAIL</label>
+            <div class="form-group mb-3">
+                <label for="email" class="form-label">EMAIL</label>
                 <div class="input-container">
-                    <input type="email" id="email" name="email" placeholder="Digite seu email" required autocomplete="off">
+                    <input type="email" id="email" name="email" class="form-control" placeholder="Digite seu email" required autocomplete="off">
                 </div>
             </div>
 
-            <div class="form-group">
-                <label for="telefone">TELEFONE</label>
+            <div class="form-group mb-3">
+                <label for="telefone" class="form-label">TELEFONE</label>
                 <div class="input-container">
-                    <input type="tel" id="telefone" name="telefone" placeholder="Digite seu telefone" maxlength="15" required autocomplete="off">
+                    <input type="tel" id="telefone" name="telefone" class="form-control" placeholder="Digite seu telefone" maxlength="15" required autocomplete="off">
                 </div>
             </div>
 
-            <div class="form-group">
-                <label for="senha">SENHA</label>
-                <div class="input-container">
-                    <input type="password" id="senha" name="senha" placeholder="Digite sua senha" 
+            <div class="form-group mb-3">
+                <label for="senha" class="form-label">SENHA</label>
+                <div class="input-container position-relative d-flex align-items-center">
+                    <input type="password" id="senha" name="senha" class="form-control" placeholder="Digite sua senha" 
                         required
                         pattern="(?=.*\d)(?=.*[a-z])(?=.*[A-Z])(?=.*[@$!%*?&.\-_#]).{8,}"
                         title="A senha deve ter no mínimo 8 caracteres, conter pelo menos uma letra maiúscula, uma minúscula, um número e um caractere especial."
@@ -103,21 +104,21 @@ if (isset($_GET['erro'])) {
                 </div>
             </div>
 
-            <div class="form-group">
-                <label for="confirma_senha">CONFIRME SUA SENHA</label>
-                <div class="input-container">
-                    <input type="password" id="confirma_senha" name="confirma_senha" placeholder="Confirme sua senha" required>
+            <div class="form-group mb-3">
+                <label for="confirma_senha" class="form-label">CONFIRME SUA SENHA</label>
+                <div class="input-container position-relative d-flex align-items-center">
+                    <input type="password" id="confirma_senha" name="confirma_senha" class="form-control" placeholder="Confirme sua senha" required>
                     <i class="fa-regular fa-eye toggle-password" id="btn-toggle-confirma" title="Mostrar/Ocultar Senha"></i>
                 </div>
             </div>
 
-            <p class="login-register-text">
+            <p class="login-register-text my-3">
                 Já possui cadastro? <a href="login.php">Clique aqui!</a>
             </p>
 
             <button type="submit" class="btn-login-submit">CADASTRAR</button>
 
-            <p class="login-register-text">
+            <p class="login-register-text mt-3 mb-0">
                 Voltar ao <a href="index.php">início!</a>
             </p>
         </form>
@@ -198,5 +199,6 @@ if (isset($_GET['erro'])) {
         }
     });
     </script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>

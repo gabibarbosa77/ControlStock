@@ -32,10 +32,11 @@ if (isset($_GET['erro'])) {
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Login - controlStoke</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="css/style.css">
 </head>
-<body class="login-body">
+<body class="login-body d-flex align-items-center justify-content-center p-3">
 
     <div class="login-card">
         <div class="login-header">
@@ -54,28 +55,28 @@ if (isset($_GET['erro'])) {
         <?php endif; ?>
 
         <form action="processaLogin.php" method="POST">
-            <div class="form-group">
-                <label for="usuario">USUÁRIO</label>
+            <div class="form-group mb-3">
+                <label for="usuario" class="form-label">USUÁRIO</label>
                 <div class="input-container">
-                    <input type="text" id="usuario" name="usuario" placeholder="Digite seu usuário ou e-mail" required autocomplete="off">
+                    <input type="text" id="usuario" name="usuario" class="form-control" placeholder="Digite seu usuário ou e-mail" required autocomplete="off">
                 </div>
             </div>
 
-            <div class="form-group">
-                <label for="senha">SENHA</label>
-                <div class="input-container">
-                    <input type="password" id="senha" name="senha" placeholder="Digite sua senha" required>
+            <div class="form-group mb-3">
+                <label for="senha" class="form-label">SENHA</label>
+                <div class="input-container position-relative d-flex align-items-center">
+                    <input type="password" id="senha" name="senha" class="form-control" placeholder="Digite sua senha" required>
                     <i class="fa-regular fa-eye toggle-password" id="btn-toggle-password" title="Mostrar/Ocultar Senha"></i>
                 </div>
             </div>
 
-            <p class="login-register-text">
+            <p class="login-register-text my-3">
                 Não possui cadastro? <a href="cadastro.php">Clique aqui!</a>
             </p>
 
             <button type="submit" class="btn-login-submit">ENTRAR</button>
 
-            <p class="login-register-text">
+            <p class="login-register-text mt-3 mb-0">
                 Voltar ao <a href="index.php">início!</a>
             </p>
 
@@ -98,5 +99,6 @@ if (isset($_GET['erro'])) {
             }
         });
     </script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>
