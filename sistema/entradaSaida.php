@@ -36,6 +36,7 @@ $stmt->close();
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Entradas e Saídas - controlStoke</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="../css/style.css">
 </head>
@@ -43,7 +44,7 @@ $stmt->close();
 
     <?php include 'menu.php'; ?>
 
-    <main class="page-container" style="display: block;">
+    <main class="page-container d-block">
         
         <!-- BARRA DE PESQUISA E FILTRO COM DROPDOWN -->
         <div class="search-filter-container">
@@ -53,7 +54,7 @@ $stmt->close();
             </div>
 
             <div class="filter-dropdown-container">
-                <button class="btn-filter" id="btn-toggle-filter">
+                <button class="btn-filter" id="btn-toggle-filter" type="button">
                     <i class="fa-solid fa-filter"></i>
                     <span>FILTRAR</span>
                 </button>
@@ -63,10 +64,10 @@ $stmt->close();
                         <i class="fa-solid fa-list"></i> Todos
                     </div>
                     <div class="filter-dropdown-item" data-filter="entradas">
-                        <i class="fa-solid fa-arrow-up" style="color: #2ec4b6;"></i> Entradas
+                        <i class="fa-solid fa-arrow-up text-success"></i> Entradas
                     </div>
                     <div class="filter-dropdown-item" data-filter="saidas">
-                        <i class="fa-solid fa-arrow-down" style="color: #e71d36;"></i> Saídas
+                        <i class="fa-solid fa-arrow-down text-danger"></i> Saídas
                     </div>
                     <div class="filter-dropdown-divider"></div>
                     <div class="filter-dropdown-item" data-sort="az">
@@ -80,12 +81,12 @@ $stmt->close();
         </div>
 
         <!-- CARD DE HISTÓRICO DE MOVIMENTAÇÕES -->
-        <div class="movements-card">
+        <div class="movements-card mx-auto">
             <h2 class="movements-title">ENTRADAS E RETIRADAS DO ESTOQUE</h2>
 
             <div class="movement-list">
                 <?php if (empty($movimentacoes)): ?>
-                    <p class="no-results-msg" style="text-align: center; padding: 20px; color: #666;">Nenhuma movimentação registrada.</p>
+                    <p class="no-results-msg text-center p-3 text-secondary">Nenhuma movimentação registrada.</p>
                 <?php else: ?>
                     <?php foreach ($movimentacoes as $mov): ?>
                         <?php 
@@ -128,7 +129,7 @@ $stmt->close();
                 <?php endif; ?>
 
                 <!-- Mensagem dinâmica caso a pesquisa não encontre correspondências -->
-                <p id="mensagem-sem-resultados" style="text-align: center; padding: 25px; color: #777; font-weight: 600; display: none;">
+                <p id="mensagem-sem-resultados" class="text-center p-4 text-secondary fw-semibold d-none">
                     Nenhum produto ou movimentação encontrada.
                 </p>
             </div>
@@ -136,11 +137,12 @@ $stmt->close();
 
     </main>
 
-    <footer class="footer">
+    <footer class="footer text-center">
         <p>© <?php echo date('Y'); ?> controlStoke — Sistema de Controle de Estoque</p>
         <p><a href="politica.php">Política de Privacidade</a></p>
     </footer>
 
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
     <script>
         document.addEventListener('DOMContentLoaded', function() {
             const searchInput = document.getElementById('input-pesquisa');
@@ -203,16 +205,24 @@ $stmt->close();
                     if (currentTypeFilter === 'saidas' && tipoMov !== 'saida') matchesType = false;
 
                     if (matchesSearch && matchesType) {
-                        item.style.display = 'flex';
+                        item.classList.remove('d-none');
+                        item.classList.add('d-flex');
                         visiveis++;
                     } else {
-                        item.style.display = 'none';
+                        item.classList.remove('d-flex');
+                        item.classList.add('d-none');
                     }
                 });
 
                 // Exibe a mensagem de aviso caso nenhum item seja visível
                 if (msgSemResultados) {
-                    msgSemResultados.style.display = (visiveis === 0 && items.length > 0) ? 'block' : 'none';
+                    if (visiveis === 0 && items.length > 0) {
+                        msgSemResultados.classList.remove('d-none');
+                        msgSemResultados.classList.add('d-block');
+                    } else {
+                        msgSemResultados.classList.remove('d-block');
+                        msgSemResultados.classList.add('d-none');
+                    }
                 }
             }
 

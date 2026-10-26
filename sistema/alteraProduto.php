@@ -19,12 +19,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $idCategoria = (int)$_POST['categoria'];
     $estoqueMinimo = (int)$_POST['estoque_minimo'];
 
-    // Tratamento do valor do Preço (transforma "R$ 10,50" ou "10,50" no formato decimal "10.50")
+    // Tratamento do valor do Preço
     $precoRaw = $_POST['preco'];
     $precoLimpo = preg_replace('/[^\d,]/', '', $precoRaw);
     $precoFloat = (float)str_replace(',', '.', $precoLimpo);
 
-    // VALIDAÇÃO: Verifica se o código de barras já pertence a OUTRO produto do mesmo usuário
+    // VALIDAÇÃO: Verifica se o código de barras já pertence a OUTRO produto
     $sqlCheck = "SELECT idProduto FROM tb_produtos WHERE codigoBarras = ? AND idUsuario = ? AND idProduto <> ?";
     $stmtCheck = $conn->prepare($sqlCheck);
     $stmtCheck->bind_param("iii", $codigoBarras, $idUsuario, $idProduto);
@@ -37,7 +37,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     } else {
         $stmtCheck->close();
 
-        // Executa a atualização garantindo o vínculo com o idUsuario
         $sqlUpdate = "UPDATE tb_produtos 
                       SET nomeProduto = ?, 
                           codigoBarras = ?, 
@@ -70,7 +69,6 @@ if (!isset($_GET['id']) || empty($_GET['id'])) {
 
 $idProduto = (int)$_GET['id'];
 
-// Busca os dados do produto
 $sqlProduto = "SELECT idProduto, nomeProduto, codigoBarras, precoProduto, estoqueMinimo, idCategoria 
                FROM tb_produtos 
                WHERE idProduto = ? AND idUsuario = ?";
@@ -87,7 +85,6 @@ if ($resProduto->num_rows === 0) {
 $produto = $resProduto->fetch_assoc();
 $stmt->close();
 
-// Busca as categorias do usuário
 $sqlCategorias = "SELECT idCategoria, nomeCategoria FROM tb_categoria WHERE idUsuario = ? ORDER BY nomeCategoria ASC";
 $stmtCat = $conn->prepare($sqlCategorias);
 $stmtCat->bind_param("i", $idUsuario);
@@ -102,6 +99,7 @@ $stmtCat->close();
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Alterar Produto - controlStoke</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="../css/style.css">
 </head>
@@ -109,41 +107,41 @@ $stmtCat->close();
 
     <?php include 'menu.php'; ?>
 
-    <main class="page-container">
-        <div class="form-card">
-            <div class="card-header-title">
-                <a href="exibirEstoque.php" class="btn-back" title="Voltar ao Estoque">
+    <main class="page-container d-flex justify-content-center pt-5 mt-4 mb-5">
+        <div class="form-card mx-auto">
+            
+            <div class="d-flex align-items-center justify-content-center position-relative mb-4">
+                <a href="exibirEstoque.php" class="btn-back position-absolute start-0" title="Voltar ao Estoque">
                     <i class="fa-solid fa-chevron-left"></i>
                 </a>
-                <h2>ALTERAR PRODUTO</h2>
+                <h2 class="m-0 text-center">ALTERAR PRODUTO</h2>
             </div>
 
-            <!-- Exibição de Erro utilizando a classe de alerta padrão do style.css -->
+            <!-- Exibição de Erro -->
             <?php if (isset($mensagemErro)): ?>
-                <div class="alert-box erro">
+                <div class="alert-box erro mb-3">
                     <i class="fa-solid fa-triangle-exclamation"></i>
                     <span><?= htmlspecialchars($mensagemErro) ?></span>
                 </div>
             <?php endif; ?>
 
-            <!-- Formulário enviando para a própria página com o ID via GET -->
             <form action="alteraProduto.php?id=<?= $produto['idProduto'] ?>" method="POST" class="product-form" id="form-altera-produto">
                 <input type="hidden" name="id_produto" value="<?= $produto['idProduto'] ?>">
 
                 <!-- Nome do Produto -->
-                <div class="form-group">
+                <div class="form-group mb-3">
                     <label for="nome_produto">NOME PRODUTO</label>
                     <input type="text" id="nome_produto" name="nome_produto" value="<?= htmlspecialchars($produto['nomeProduto']) ?>" required autocomplete="off">
                 </div>
 
-                <!-- Código de Barras (Bloqueado/Readonly para edição) -->
-                <div class="form-group">
+                <!-- Código de Barras -->
+                <div class="form-group mb-3">
                     <label for="codigo_barras">CÓDIGO BARRAS (MÁX: 10 CARACTERES)</label>
                     <input type="text" id="codigo_barras" name="codigo_barras" value="<?= htmlspecialchars($produto['codigoBarras']) ?>" maxlength="10" readonly required autocomplete="off">
                 </div>
 
                 <!-- Categoria -->
-                <div class="form-group">
+                <div class="form-group mb-3">
                     <label for="categoria">CATEGORIA</label>
                     <select id="categoria" name="categoria" required>
                         <option value="">Selecione uma Categoria</option>
@@ -156,19 +154,19 @@ $stmtCat->close();
                 </div>
 
                 <!-- Preço -->
-                <div class="form-group">
+                <div class="form-group mb-3">
                     <label for="preco">PREÇO</label>
                     <input type="text" id="preco" name="preco" value="R$<?= number_format($produto['precoProduto'], 2, ',', '.') ?>" required>
                 </div>
 
                 <!-- Estoque Mínimo -->
-                <div class="form-group">
+                <div class="form-group mb-4">
                     <label for="estoque_minimo">ESTOQUE MÍNIMO</label>
                     <input type="number" id="estoque_minimo" name="estoque_minimo" value="<?= (int)$produto['estoqueMinimo'] ?>" required min="0">
                 </div>
 
                 <!-- Botão Salvar -->
-                <button type="submit" class="btn-save">
+                <button type="submit" class="btn-save w-100 justify-content-center">
                     <i class="fa-regular fa-floppy-disk"></i>
                     <span>SALVAR</span>
                 </button>
@@ -176,11 +174,12 @@ $stmtCat->close();
         </div>
     </main>
 
-    <footer class="footer">
+    <footer class="footer text-center">
         <p>© <?php echo date('Y'); ?> controlStoke — Sistema de Controle de Estoque</p>
         <p><a href="politica.php">Política de Privacidade</a></p>
     </footer>
 
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
     <script>
         document.addEventListener('DOMContentLoaded', function () {
             function applyCurrencyMask(input) {

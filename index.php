@@ -10,6 +10,7 @@
 </head>
 <body class="d-flex flex-column min-vh-100">
 
+    <!-- NAVBAR FIXA -->
     <header class="navbar">
         <a href="index.php" class="logo">
             <img src="imagem/logo.png" alt="controlStoke Logo" class="logo-img">
@@ -21,15 +22,17 @@
     </header>
 
     <main class="flex-grow-1">
-        <section class="hero-section">
-            <div class="hero-card">
+        <!-- HERO SECTION: Afastada do menu com pt-5 mt-4 e centralizada com d-flex justify-content-center -->
+        <section class="hero-section pt-5 mt-4 pb-4 d-flex justify-content-center">
+            <div class="hero-card text-center mx-auto">
                 <h1>Seu estoque sob controle!</h1>
                 <p>Gerencie produtos, entradas, saídas e pedidos de forma simples e organizada.</p>
                 <a href="login.php" class="btn-acessar">ACESSAR</a>
             </div>
         </section>
 
-        <section class="why-section">
+        <!-- SEÇÃO PRINCIPAL -->
+        <section class="why-section my-5">
             <h2 class="section-title">POR QUE O CONTROL STOKE?</h2>
             <div class="divider"></div>
 
@@ -92,7 +95,8 @@
             </div>
         </section>
 
-        <section class="steps-section">
+        <!-- COMO FUNCIONA -->
+        <section class="steps-section my-5">
             <h2 class="section-title">COMO FUNCIONA?</h2>
             <div class="divider"></div>
 
@@ -117,7 +121,8 @@
             </div>
         </section>
 
-        <section class="tips-section">
+        <!-- DICAS -->
+        <section class="tips-section my-5">
             <div class="tips-box">
                 <h3><i class="fa-solid fa-lightbulb"></i> Dicas para uma boa gestão de estoque</h3>
                 <ul class="tips-list">
@@ -131,9 +136,10 @@
     </main>
 
     <footer class="footer mt-auto">
-        <p>© <?php echo date('Y'); ?> controlStoke — Sistema de Controle de Estoque[cite: 2]</p>
+        <p>© <?php echo date('Y'); ?> controlStoke — Sistema de Controle de Estoque</p>
         <p><a href="sistema/politica.php">Política de Privacidade</a></p>
     </footer>
+
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>

@@ -62,6 +62,7 @@ $stmt->close();
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Estoque - controlStoke</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="../css/style.css">
 </head>
@@ -69,9 +70,8 @@ $stmt->close();
 
     <?php include 'menu.php'; ?>
 
-    <main class="page-container" style="display: block;">
+    <main class="page-container d-block">
         
-        <!-- BARRA DE PESQUISA E FILTRO COM DROPDOWN -->
         <div class="search-filter-container">
             <div class="search-box">
                 <i class="fa-solid fa-magnifying-glass"></i>
@@ -79,7 +79,7 @@ $stmt->close();
             </div>
 
             <div class="filter-dropdown-container">
-                <button class="btn-filter" id="btn-toggle-filter">
+                <button class="btn-filter" id="btn-toggle-filter" type="button">
                     <i class="fa-solid fa-filter"></i>
                     <span>FILTRAR</span>
                 </button>
@@ -89,13 +89,13 @@ $stmt->close();
                         <i class="fa-solid fa-list"></i> Todos
                     </div>
                     <div class="filter-dropdown-item" data-filter="green">
-                        <i class="fa-solid fa-circle" style="color: #2ec4b6;"></i> Estoque Normal
+                        <i class="fa-solid fa-circle text-success"></i> Estoque Normal
                     </div>
                     <div class="filter-dropdown-item" data-filter="orange">
-                        <i class="fa-solid fa-circle" style="color: #ff9f1c;"></i> Estoque Baixo
+                        <i class="fa-solid fa-circle text-warning"></i> Estoque Baixo
                     </div>
                     <div class="filter-dropdown-item" data-filter="red">
-                        <i class="fa-solid fa-circle" style="color: #e71d36;"></i> Estoque Zerado
+                        <i class="fa-solid fa-circle text-danger"></i> Estoque Zerado
                     </div>
                     <div class="filter-dropdown-divider"></div>
                     <div class="filter-dropdown-item" data-sort="az">
@@ -140,105 +140,104 @@ $stmt->close();
             <h3 class="table-card-title">PRODUTOS CADASTRADOS</h3>
             <div class="divider"></div>
 
-            <table class="stock-table">
-                <thead>
-                    <tr>
-                        <th>PRODUTO</th>
-                        <th>CÓDIGO BARRAS</th>
-                        <th>CATEGORIA</th>
-                        <th>R$</th>
-                        <th>QUANT.</th>
-                        <th>ESTOQUE</th>
-                        <th>AÇÕES</th>
-                    </tr>
-                </thead>
-                <tbody id="stock-tbody">
-                    <?php if (empty($produtos)): ?>
+            <div class="table-responsive">
+                <table class="stock-table align-middle">
+                    <thead>
                         <tr>
-                            <td colspan="7" style="text-align: center; padding: 20px;">Nenhum produto cadastrado.</td>
+                            <th>PRODUTO</th>
+                            <th>CÓDIGO BARRAS</th>
+                            <th>CATEGORIA</th>
+                            <th>R$</th>
+                            <th>QUANT.</th>
+                            <th>ESTOQUE</th>
+                            <th>AÇÕES</th>
                         </tr>
-                    <?php else: ?>
-                        <?php foreach ($produtos as $prod): ?>
+                    </thead>
+                    <tbody id="stock-tbody">
+                        <?php if (empty($produtos)): ?>
                             <tr>
-                                <td><strong><?= htmlspecialchars($prod['nomeProduto']) ?></strong></td>
-                                <td><?= htmlspecialchars($prod['codigoBarras']) ?></td>
-                                <td><?= htmlspecialchars($prod['nomeCategoria'] ?? 'Sem Categoria') ?></td>
-                                <td>R$ <?= number_format($prod['precoProduto'], 2, ',', '.') ?></td>
-                                <td><?= (int)$prod['estoqueProduto'] ?></td>
-                                <td>
-                                    <span class="stock-status-dot <?= $prod['corStatus'] ?>" title="<?= $prod['textoStatus'] ?>"></span>
-                                </td>
-                                <td>
-                                    <div class="table-actions">
-                                        <button class="action-icon-btn delete" 
-                                                onclick="openDeleteModal(<?= (int)$prod['idProduto'] ?>, '<?= htmlspecialchars($prod['nomeProduto'], ENT_QUOTES) ?>')" 
-                                                title="Excluir">
-                                            <i class="fa-regular fa-trash-can"></i>
-                                        </button>
-                                        <a href="alteraProduto.php?id=<?= (int)$prod['idProduto'] ?>" class="action-icon-btn edit" title="Alterar Produto">
-                                            <i class="fa-regular fa-pen-to-square"></i>
-                                        </a>
-                                        <a href="alteraEstoque.php?id=<?= (int)$prod['idProduto'] ?>" class="action-icon-btn box" title="Alterar/Entrada Estoque">
-                                            <i class="fa-solid fa-box-open"></i>
-                                        </a>
-                                    </div>
-                                </td>
+                                <td colspan="7" class="text-center p-3">Nenhum produto cadastrado.</td>
                             </tr>
-                        <?php endforeach; ?>
-                    <?php endif; ?>
-                </tbody>
-            </table>
+                        <?php else: ?>
+                            <?php foreach ($produtos as $prod): ?>
+                                <tr>
+                                    <td><strong><?= htmlspecialchars($prod['nomeProduto']) ?></strong></td>
+                                    <td><?= htmlspecialchars($prod['codigoBarras']) ?></td>
+                                    <td><?= htmlspecialchars($prod['nomeCategoria'] ?? 'Sem Categoria') ?></td>
+                                    <td>R$ <?= number_format($prod['precoProduto'], 2, ',', '.') ?></td>
+                                    <td><?= (int)$prod['estoqueProduto'] ?></td>
+                                    <td>
+                                        <span class="stock-status-dot <?= $prod['corStatus'] ?>" title="<?= $prod['textoStatus'] ?>"></span>
+                                    </td>
+                                    <td>
+                                        <div class="table-actions d-flex align-items-center gap-2">
+                                            <button type="button" class="action-icon-btn delete" 
+                                                    onclick="openDeleteModal(<?= (int)$prod['idProduto'] ?>, '<?= htmlspecialchars($prod['nomeProduto'], ENT_QUOTES) ?>')" 
+                                                    title="Excluir">
+                                                <i class="fa-regular fa-trash-can"></i>
+                                            </button>
+                                            <a href="alteraProduto.php?id=<?= (int)$prod['idProduto'] ?>" class="action-icon-btn edit" title="Alterar Produto">
+                                                <i class="fa-regular fa-pen-to-square"></i>
+                                            </a>
+                                            <a href="alteraEstoque.php?id=<?= (int)$prod['idProduto'] ?>" class="action-icon-btn box" title="Alterar/Entrada Estoque">
+                                                <i class="fa-solid fa-box-open"></i>
+                                            </a>
+                                        </div>
+                                    </td>
+                                </tr>
+                            <?php endforeach; ?>
+                        <?php endif; ?>
+                    </tbody>
+                </table>
+            </div>
         </div>
 
     </main>
 
-    <!-- MODAL DE EXCLUSÃO -->
-    <div class="modal-overlay" id="modal-excluir">
-        <div class="modal-card">
-            <button class="modal-close-btn" onclick="closeDeleteModal()"><i class="fa-solid fa-xmark"></i></button>
-            <h3 class="modal-title">EXCLUIR PRODUTO</h3>
-            <p class="modal-text">
-                TEM CERTEZA QUE DESEJA EXCLUIR <span id="nome-produto-modal">PRODUTO</span>? NÃO SERÁ POSSÍVEL RESTAURAR APÓS EXCLUSÃO.
-            </p>
-
-            <form action="excluirProduto.php" method="POST">
-                <input type="hidden" name="id_produto" id="id_produto_delete">
-                <button type="submit" class="btn-confirm-delete">
-                    <i class="fa-regular fa-trash-can"></i>
-                    <span>EXCLUIR</span>
+    <!-- MODAL DE EXCLUSÃO (BOOTSTRAP 5) -->
+    <div class="modal fade" id="modalExcluir" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content modal-card position-relative">
+                <button type="button" class="modal-close-btn" data-bs-dismiss="modal" aria-label="Close">
+                    <i class="fa-solid fa-xmark"></i>
                 </button>
-            </form>
+                <h3 class="modal-title">EXCLUIR PRODUTO</h3>
+                <p class="modal-text">
+                    TEM CERTEZA QUE DESEJA EXCLUIR <span id="nome-produto-modal">PRODUTO</span>? NÃO SERÁ POSSÍVEL RESTAURAR APÓS EXCLUSÃO.
+                </p>
+
+                <form action="excluirProduto.php" method="POST">
+                    <input type="hidden" name="id_produto" id="id_produto_delete">
+                    <button type="submit" class="btn-confirm-delete">
+                        <i class="fa-regular fa-trash-can"></i>
+                        <span>EXCLUIR</span>
+                    </button>
+                </form>
+            </div>
         </div>
     </div>
 
-    <footer class="footer">
+    <footer class="footer text-center">
         <p>© <?php echo date('Y'); ?> controlStoke — Sistema de Controle de Estoque</p>
-        <p><a href="../politica.php">Política de Privacidade</a></p>
+        <p><a href="politica.php">Política de Privacidade</a></p>
     </footer>
 
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
     <script>
-        /* Modais */
-        const modal = document.getElementById('modal-excluir');
+        /* Instância do Modal Bootstrap */
+        let bsDeleteModal;
         const nomeProdutoSpan = document.getElementById('nome-produto-modal');
         const inputIdDelete = document.getElementById('id_produto_delete');
+
+        document.addEventListener('DOMContentLoaded', function() {
+            bsDeleteModal = new bootstrap.Modal(document.getElementById('modalExcluir'));
+        });
 
         function openDeleteModal(idProduto, nomeProduto) {
             inputIdDelete.value = idProduto;
             nomeProdutoSpan.textContent = nomeProduto;
-            modal.classList.add('active');
+            bsDeleteModal.show();
         }
-
-        function closeDeleteModal() {
-            modal.classList.remove('active');
-        }
-
-        modal.addEventListener('click', function(e) {
-            if (e.target === modal) closeDeleteModal();
-        });
-
-        document.addEventListener('keydown', function(e) {
-            if (e.key === 'Escape' && modal.classList.contains('active')) closeDeleteModal();
-        });
 
         /* Filtro e Ordenação */
         document.addEventListener('DOMContentLoaded', function() {

@@ -1,5 +1,5 @@
 <?php
-// home.php
+
 if (session_status() === PHP_SESSION_NONE) {
     session_start();
 }
@@ -97,6 +97,7 @@ $stmtCriticos->close();
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Painel Principal - controlStoke</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="../css/style.css">
 </head>
@@ -106,7 +107,7 @@ $stmtCriticos->close();
 
     <main class="dashboard-container">
         
-        <div class="dashboard-header">
+        <div class="dashboard-header text-center">
             <h1>Seja bem-vindo(a), <?= htmlspecialchars($nomeUsuario) ?>!</h1>
             <p>Confira um resumo do estoque atual</p>
         </div>
@@ -124,9 +125,9 @@ $stmtCriticos->close();
 
                 <div class="recent-movements-card">
                     <h4>Movimentações Recentes</h4>
-                    <ul class="movement-list">
+                    <ul class="movement-list p-0 m-0">
                         <?php if (empty($movimentacoesRecentes)): ?>
-                            <li class="movement-item" style="padding: 10px;">Sem movimentações recentes.</li>
+                            <li class="movement-item p-2 text-center text-muted">Sem movimentações recentes.</li>
                         <?php else: ?>
                             <?php foreach ($movimentacoesRecentes as $mov): ?>
                                 <?php
@@ -158,9 +159,9 @@ $stmtCriticos->close();
                                         <div class="movement-icon <?= $classeIcone ?>">
                                             <i class="fa-solid <?= $icone ?>"></i>
                                         </div>
-                                        <div class="movement-details">
-                                            <strong><?= htmlspecialchars($mov['nomeProduto']) ?></strong>
-                                            <span><?= $descricao ?></span>
+                                        <div class="movement-details d-flex flex-column align-items-start">
+                                            <strong class="d-block"><?= htmlspecialchars($mov['nomeProduto']) ?></strong>
+                                            <small class="text-muted d-block"><?= $descricao ?></small>
                                         </div>
                                     </div>
                                     <span class="movement-value <?= $valorClasse ?>"><?= $valorFormatado ?></span>
@@ -220,7 +221,7 @@ $stmtCriticos->close();
             </a>
             <a href="entradaSaida.php" class="action-btn-card">
                 <i class="fa-solid fa-right-left"></i>
-                <span>Registrar Entrada/Saída</span>
+                <span>Registros Entrada/Saída</span>
             </a>
             <a href="exibirEstoque.php" class="action-btn-card">
                 <i class="fa-regular fa-calendar-check"></i>
@@ -237,8 +238,8 @@ $stmtCriticos->close();
             <div class="line"></div>
         </div>
 
-        <div class="table-container">
-            <table class="custom-table">
+        <div class="table-container table-responsive">
+            <table class="custom-table align-middle">
                 <thead>
                     <tr>
                         <th>Código</th>
@@ -251,7 +252,7 @@ $stmtCriticos->close();
                 <tbody>
                     <?php if (empty($itensCriticos)): ?>
                         <tr>
-                            <td colspan="5" style="text-align: center; padding: 15px;">
+                            <td colspan="5" class="text-center p-3">
                                 Nenhum item em estado crítico no momento.
                             </td>
                         </tr>
@@ -282,10 +283,11 @@ $stmtCriticos->close();
 
     </main>
 
-    <footer class="footer">
-        <p>© <?php echo date('Y'); ?> controlStoke — Sistema de Controle de Estoque[cite: 2]</p>
+    <footer class="footer text-center">
+        <p>© <?php echo date('Y'); ?> controlStoke — Sistema de Controle de Estoque</p>
         <p><a href="politica.php">Política de Privacidade</a></p>
     </footer>
 
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>

@@ -58,7 +58,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 $qtdMovimentada = $qtdInformada;
             } elseif ($tipoOpcao === 'ajustar') {
                 $novoEstoque = $qtdInformada;
-                $qtdMovimentada = $qtdInformada; // Salva o novo valor final diretamente (ex: 49)
+                $qtdMovimentada = $qtdInformada;
             } else {
                 throw new Exception("Opção de movimentação inválida.");
             }
@@ -125,6 +125,7 @@ $stmt->close();
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Alterar/Entrada Estoque - controlStoke</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="../css/style.css">
 </head>
@@ -132,19 +133,22 @@ $stmt->close();
 
     <?php include 'menu.php'; ?>
 
-    <main class="page-container">
+    <main class="page-container d-flex justify-content-center pt-5 mt-4 mb-5">
         
-        <div class="form-card" style="max-width: 580px;">
+        <div class="form-card mx-auto">
             
-            <div class="card-header-title">
-                <a href="exibirEstoque.php" class="btn-back" title="Voltar ao Estoque">
+            <!-- Cabeçalho alinhado sem sobreposição -->
+            <div class="d-flex align-items-center justify-content-center position-relative mb-4">
+                <a href="exibirEstoque.php" class="btn-back position-absolute start-0" title="Voltar ao Estoque">
                     <i class="fa-solid fa-chevron-left"></i>
                 </a>
-                <h2>ALTERAR/ENTRADA ESTOQUE</h2>
+                <h2 class="m-0 text-center">ALTERAR/ENTRADA ESTOQUE</h2>
             </div>
 
+            <!-- Exibição de Alerta de Erro -->
             <?php if (!empty($mensagemErro)): ?>
-                <div style="background-color: #f8d7da; color: #721c24; padding: 10px; border-radius: 5px; margin-bottom: 15px; text-align: center;">
+                <div class="alert alert-danger text-center mb-3" role="alert">
+                    <i class="fa-solid fa-triangle-exclamation me-2"></i>
                     <?= htmlspecialchars($mensagemErro) ?>
                 </div>
             <?php endif; ?>
@@ -155,26 +159,26 @@ $stmt->close();
 
                 <!-- Campos Bloqueados -->
                 <div class="form-row-2col">
-                    <div class="form-group">
+                    <div class="form-group mb-3">
                         <label for="nome_produto">NOME PRODUTO</label>
                         <input type="text" id="nome_produto" value="<?= htmlspecialchars($produto['nomeProduto']) ?>" readonly>
                     </div>
 
-                    <div class="form-group">
+                    <div class="form-group mb-3">
                         <label for="codigo_barras">CÓDIGO BARRAS</label>
                         <input type="text" id="codigo_barras" value="<?= htmlspecialchars($produto['codigoBarras']) ?>" readonly>
                     </div>
                 </div>
 
-                <div class="form-group">
+                <div class="form-group mb-3">
                     <label for="estoque_atual">ESTOQUE ATUAL</label>
                     <input type="text" id="estoque_atual" value="<?= (int)$produto['estoqueProduto'] ?>" readonly>
                 </div>
 
-                <hr class="form-divider">
+                <hr class="form-divider my-4">
 
                 <!-- Campos Editáveis -->
-                <div class="form-group">
+                <div class="form-group mb-3">
                     <label for="tipo_opcao">ESCOLHA UMA OPÇÃO</label>
                     <select id="tipo_opcao" name="tipo_opcao" required>
                         <option value="" disabled selected>NENHUMA OPÇÃO SELECIONADA</option>
@@ -184,12 +188,12 @@ $stmt->close();
                     </select>
                 </div>
 
-                <div class="form-group">
+                <div class="form-group mb-4">
                     <label for="atualizar_estoque">QUANTIDADE</label>
                     <input type="number" id="atualizar_estoque" name="atualizar_estoque" value="0" min="0" required>
                 </div>
 
-                <button type="submit" class="btn-save">
+                <button type="submit" class="btn-save w-100 justify-content-center">
                     <i class="fa-regular fa-floppy-disk"></i>
                     <span>SALVAR</span>
                 </button>
@@ -198,10 +202,12 @@ $stmt->close();
 
     </main>
 
-    <footer class="footer">
+    <footer class="footer text-center">
         <p>© <?php echo date('Y'); ?> controlStoke — Sistema de Controle de Estoque</p>
         <p><a href="politica.php">Política de Privacidade</a></p>
     </footer>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 
 </body>
 </html>

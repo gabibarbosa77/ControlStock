@@ -3,42 +3,22 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ControlStoke</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
-        .control-topbar, .control-sidebar, .control-overlay, .logout-modal-overlay {
-            box-sizing: border-box;
-            margin: 0;
-            padding: 0;
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-        }
-
+        /* Estilos do Topbar Nativos */
         .control-topbar {
             background-color: #0d3b66;
-            color: #ffffff;
             height: 65px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 0 20px;
-            position: fixed;
-            top: 0;
-            left: 0;
-            right: 0;
             z-index: 1000;
             box-shadow: 0 2px 5px rgba(0,0,0,0.2);
-        }
-
-        .control-logo {
-            display: flex;
-            align-items: center;
-            text-decoration: none;
         }
 
         .control-logo-img {
             height: 45px;
             width: auto;
             object-fit: contain;
-            display: block;
         }
 
         .hamburger-btn {
@@ -46,13 +26,9 @@
             border: none;
             color: #ffffff;
             font-size: 26px;
-            cursor: pointer;
             padding: 5px 10px;
             border-radius: 4px;
             transition: background-color 0.2s ease, transform 0.1s ease;
-            display: flex;
-            align-items: center;
-            justify-content: center;
         }
 
         .hamburger-btn:hover {
@@ -63,61 +39,33 @@
             transform: scale(0.95);
         }
 
-        .control-sidebar {
-            width: 320px;
-            background-color: #92c9e8;
-            position: fixed;
-            top: 0;
-            right: -320px;
-            height: 100vh;
-            display: flex;
-            flex-direction: column;
-            justify-content: space-between;
-            z-index: 1002;
-            transition: right 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        /* Estilos do Offcanvas (Sidebar) Ajustados para Manter Identidade Visual */
+        .offcanvas-sidebar {
+            width: 320px !important;
+            background-color: #92c9e8 !important;
             box-shadow: -4px 0 15px rgba(0,0,0,0.2);
+            border-left: none !important;
         }
 
-        .control-sidebar.active {
-            right: 0;
-        }
-
-        .sidebar-header {
+        .sidebar-header-custom {
             height: 65px;
-            display: flex;
-            align-items: center;
-            justify-content: flex-end;
-            padding: 0 20px;
             background-color: rgba(0, 0, 0, 0.05);
         }
 
-        .close-btn {
+        .close-btn-custom {
             background: none;
             border: none;
             color: #0b2545;
             font-size: 26px;
-            cursor: pointer;
             padding: 5px;
             transition: color 0.2s ease;
         }
 
-        .close-btn:hover {
+        .close-btn-custom:hover {
             color: #d90429;
         }
 
-        .sidebar-nav {
-            flex: 1;
-            overflow-y: auto;
-            padding-top: 15px;
-        }
-
-        .sidebar-menu {
-            list-style: none;
-            display: flex;
-            flex-direction: column;
-        }
-
-        .sidebar-menu li a {
+        .sidebar-menu-list a {
             display: flex;
             align-items: center;
             gap: 16px;
@@ -131,73 +79,30 @@
             transition: background-color 0.2s ease, color 0.2s ease;
         }
 
-        .sidebar-menu li a:hover {
+        .sidebar-menu-list a:hover {
             background-color: #7ab8de;
             color: #000000;
         }
 
-        .sidebar-menu li a i {
+        .sidebar-menu-list a i {
             font-size: 20px;
             width: 24px;
             text-align: center;
         }
 
-        .sidebar-bottom {
+        .sidebar-bottom-custom {
             border-top: 1px solid rgba(11, 37, 69, 0.15);
             padding-bottom: 20px;
             padding-top: 10px;
         }
 
-        .control-overlay {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100vw;
-            height: 100vh;
-            background-color: rgba(0, 0, 0, 0.5);
-            z-index: 1001;
-            opacity: 0;
-            visibility: hidden;
-            transition: opacity 0.3s ease, visibility 0.3s ease;
-        }
-
-        .control-overlay.active {
-            opacity: 1;
-            visibility: visible;
-        }
-
-        .logout-modal-overlay {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100vw;
-            height: 100vh;
-            background-color: rgba(0, 0, 0, 0.5);
-            z-index: 2000;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            padding: 20px;
-            opacity: 0;
-            visibility: hidden;
-            transition: opacity 0.2s ease, visibility 0.2s ease;
-        }
-
-        .logout-modal-overlay.active {
-            opacity: 1;
-            visibility: visible;
-        }
-
+        /* Modal do Logout */
         .logout-modal-card {
-            background-color: #ffffff;
             border: 1.5px solid #e71d36;
             border-radius: 16px;
             padding: 25px 30px;
-            width: 100%;
             max-width: 420px;
             box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
-            position: relative;
-            text-align: center;
         }
 
         .logout-modal-card .logout-close-btn {
@@ -228,12 +133,6 @@
             margin-bottom: 22px;
         }
 
-        .logout-modal-actions {
-            display: flex;
-            gap: 12px;
-            justify-content: center;
-        }
-
         .btn-cancel-logout {
             background-color: #e2e8f0;
             color: #333333;
@@ -242,7 +141,6 @@
             border-radius: 8px;
             font-weight: 800;
             font-size: 13px;
-            cursor: pointer;
             transition: background-color 0.2s ease;
         }
 
@@ -258,146 +156,94 @@
             border-radius: 8px;
             font-weight: 800;
             font-size: 13px;
-            display: flex;
+            display: inline-flex;
             align-items: center;
             gap: 8px;
-            cursor: pointer;
             text-decoration: none;
             transition: background-color 0.2s ease;
         }
 
         .btn-confirm-logout:hover {
             background-color: #c9182e;
+            color: #ffffff;
         }
     </style>
 </head>
 <body>
 
-    <header class="control-topbar">
-        <a href="home.php" class="control-logo">
+    <header class="control-topbar fixed-top d-flex align-items-center justify-content-between px-3">
+        <a href="home.php" class="d-flex align-items-center text-decoration-none">
             <img src="../imagem/logo.png" alt="controlStoke" class="control-logo-img">
         </a>
 
-        <button class="hamburger-btn" id="btn-hamburger" title="Abrir Menu">
+        <button class="hamburger-btn d-flex align-items-center justify-content-center" type="button" data-bs-toggle="offcanvas" data-bs-target="#sidebarOffcanvas" aria-controls="sidebarOffcanvas" title="Abrir Menu">
             <i class="fa-solid fa-bars"></i>
         </button>
     </header>
 
-    <div class="control-overlay" id="menu-overlay"></div>
+    <div class="offcanvas offcanvas-end offcanvas-sidebar d-flex flex-column justify-content-between p-0" tabindex="-1" id="sidebarOffcanvas" aria-labelledby="sidebarOffcanvasLabel">
+        <div>
+            <div class="sidebar-header-custom d-flex align-items-center justify-content-end px-3">
+                <button type="button" class="close-btn-custom" data-bs-dismiss="offcanvas" aria-label="Close" title="Fechar Menu">
+                    <i class="fa-solid fa-xmark"></i>
+                </button>
+            </div>
 
-    <aside class="control-sidebar" id="sidebar-drawer">
-        <div class="sidebar-header">
-            <button class="close-btn" id="btn-close-sidebar" title="Fechar Menu">
-                <i class="fa-solid fa-xmark"></i>
-            </button>
+            <nav class="sidebar-nav-custom pt-3">
+                <ul class="list-unstyled p-0 m-0 sidebar-menu-list">
+                    <li>
+                        <a href="home.php"><i class="fa-solid fa-house"></i> HOME</a>
+                    </li>
+                    <li>
+                        <a href="cadastrarProduto.php"><i class="fa-regular fa-file-lines"></i> CADASTRAR PRODUTO</a>
+                    </li>
+                    <li>
+                        <a href="exibirEstoque.php"><i class="fa-regular fa-calendar-check"></i> ESTOQUE</a>
+                    </li>
+                    <li>
+                        <a href="cadastrarCategoria.php"><i class="fa-solid fa-tag"></i> CADASTRAR CATEGORIA</a>
+                    </li>
+                    <li>
+                        <a href="entradaSaida.php"><i class="fa-solid fa-right-left"></i> ENTRADA E SAÍDA ESTOQUE</a>
+                    </li>
+                </ul>
+            </nav>
         </div>
 
-        <nav class="sidebar-nav">
-            <ul class="sidebar-menu">
-                <li>
-                    <a href="home.php"><i class="fa-solid fa-house"></i> HOME</a>
-                </li>
-                <li>
-                    <a href="cadastrarProduto.php"><i class="fa-regular fa-file-lines"></i> CADASTRAR PRODUTO</a>
-                </li>
-                <li>
-                    <a href="exibirEstoque.php"><i class="fa-regular fa-calendar-check"></i> ESTOQUE</a>
-                </li>
-                <li>
-                    <a href="cadastrarCategoria.php"><i class="fa-solid fa-tag"></i> CADASTRAR CATEGORIA</a>
-                </li>
-                <li>
-                    <a href="entradaSaida.php"><i class="fa-solid fa-right-left"></i> ENTRADA E SAÍDA ESTO.</a>
-                </li>
-            </ul>
-        </nav>
-
-        <div class="sidebar-bottom">
-            <ul class="sidebar-menu">
+        <div class="sidebar-bottom-custom">
+            <ul class="list-unstyled p-0 m-0 sidebar-menu-list">
                 <li>
                     <a href="configuracao.php"><i class="fa-solid fa-gear"></i> CONFIGURAÇÕES</a>
                 </li>
                 <li>
-                    <!-- Clique dispara a abertura do modal de confirmação -->
-                    <a href="javascript:void(0);" id="btn-open-logout-modal"><i class="fa-solid fa-right-from-bracket"></i> SAIR</a>
+                    <a href="javascript:void(0);" data-bs-toggle="modal" data-bs-target="#modalLogout"><i class="fa-solid fa-right-from-bracket"></i> SAIR</a>
                 </li>
             </ul>
         </div>
-    </aside>
+    </div>
 
-    <!-- MODAL DE CONFIRMAÇÃO DE SAÍDA GLOBAL -->
-    <div class="logout-modal-overlay" id="modal-logout">
-        <div class="logout-modal-card">
-            <button class="logout-close-btn" id="btn-close-logout-modal"><i class="fa-solid fa-xmark"></i></button>
-            <h3>SAIR DO SISTEMA</h3>
-            <p>TEM CERTEZA QUE DESEJA SAIR DO CONTROLSTOKE?</p>
-            
-            <div class="logout-modal-actions">
-                <button class="btn-cancel-logout" id="btn-cancel-logout">CANCELAR</button>
-                <a href="sair.php" class="btn-confirm-logout">
-                    <i class="fa-solid fa-right-from-bracket"></i>
-                    <span>SAIR</span>
-                </a>
+    <!-- MODAL DE CONFIRMAÇÃO DE SAÍDA (MODAL NATIVO DO BOOTSTRAP) -->
+    <div class="modal fade" id="modalLogout" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content logout-modal-card text-center position-relative mx-auto">
+                <button type="button" class="logout-close-btn" data-bs-dismiss="modal" aria-label="Close">
+                    <i class="fa-solid fa-xmark"></i>
+                </button>
+                
+                <h3>SAIR DO SISTEMA</h3>
+                <p>TEM CERTEZA QUE DESEJA SAIR DO CONTROLSTOKE?</p>
+                
+                <div class="d-flex gap-2 justify-content-center">
+                    <button type="button" class="btn-cancel-logout" data-bs-dismiss="modal">CANCELAR</button>
+                    <a href="sair.php" class="btn-confirm-logout">
+                        <i class="fa-solid fa-right-from-bracket"></i>
+                        <span>SAIR</span>
+                    </a>
+                </div>
             </div>
         </div>
     </div>
 
-    <script>
-        document.addEventListener('DOMContentLoaded', function() {
-            // Menu Lateral
-            const btnHamburger = document.getElementById('btn-hamburger');
-            const btnClose = document.getElementById('btn-close-sidebar');
-            const sidebar = document.getElementById('sidebar-drawer');
-            const overlay = document.getElementById('menu-overlay');
-
-            // Modal Sair
-            const btnOpenLogoutModal = document.getElementById('btn-open-logout-modal');
-            const modalLogout = document.getElementById('modal-logout');
-            const btnCloseLogoutModal = document.getElementById('btn-close-logout-modal');
-            const btnCancelLogout = document.getElementById('btn-cancel-logout');
-
-            function openMenu() {
-                sidebar.classList.add('active');
-                overlay.classList.add('active');
-            }
-
-            function closeMenu() {
-                sidebar.classList.remove('active');
-                overlay.classList.remove('active');
-            }
-
-            function openLogoutModal() {
-                closeMenu(); // Fecha a sidebar ao abrir o modal
-                modalLogout.classList.add('active');
-            }
-
-            function closeLogoutModal() {
-                modalLogout.classList.remove('active');
-            }
-
-            // Listeners da Sidebar
-            btnHamburger.addEventListener('click', openMenu);
-            btnClose.addEventListener('click', closeMenu);
-            overlay.addEventListener('click', closeMenu);
-
-            // Listeners do Modal
-            btnOpenLogoutModal.addEventListener('click', openLogoutModal);
-            btnCloseLogoutModal.addEventListener('click', closeLogoutModal);
-            btnCancelLogout.addEventListener('click', closeLogoutModal);
-
-            modalLogout.addEventListener('click', function(event) {
-                if (event.target === modalLogout) {
-                    closeLogoutModal();
-                }
-            });
-
-            document.addEventListener('keydown', function(event) {
-                if (event.key === 'Escape') {
-                    closeMenu();
-                    closeLogoutModal();
-                }
-            });
-        });
-    </script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>

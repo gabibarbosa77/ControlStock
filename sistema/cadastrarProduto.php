@@ -53,7 +53,11 @@ switch ($status) {
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Cadastrar Produto - controlStoke</title>
+    <!-- Bootstrap 5 CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- FontAwesome -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- CSS Customizado -->
     <link rel="stylesheet" href="../css/style.css">
 </head>
 <body>
@@ -65,7 +69,7 @@ switch ($status) {
         <div class="form-card">
             <h2>CADASTRAR PRODUTO</h2>
 
-            <!-- Exibição do Alerta de Erro caso o código seja duplicado ou haja falha -->
+            <!-- Exibição do Alerta de Erro -->
             <?php if (!empty($mensagem) && $tipoStatus === 'erro'): ?>
                 <div class="alert-box erro">
                     <i class="fa-solid fa-triangle-exclamation"></i>
@@ -125,7 +129,7 @@ switch ($status) {
             </form>
         </div>
 
-        <!-- Exibição do Toast de Sucesso utilizando o estilo nativo do style.css -->
+        <!-- Exibição do Toast de Sucesso -->
         <?php if (!empty($mensagem) && $tipoStatus === 'sucesso'): ?>
             <div class="toast-success">
                 <i class="fa-solid fa-circle-check toast-icon"></i>
@@ -135,11 +139,12 @@ switch ($status) {
 
     </main>
 
-    <footer class="footer">
+    <footer class="footer text-center">
         <p>© <?php echo date('Y'); ?> controlStoke — Sistema de Controle de Estoque</p>
         <p><a href="politica.php">Política de Privacidade</a></p>
     </footer>
 
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
     <script>
         document.addEventListener('DOMContentLoaded', function () {
             const precoInput = document.getElementById('preco');

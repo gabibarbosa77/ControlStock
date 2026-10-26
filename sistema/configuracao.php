@@ -6,7 +6,6 @@ if (!isset($_SESSION['idUsuario'])) {
     exit();
 }
 
-// 1. Conexão com a base de dados
 require_once '../conecta/conecta.php'; 
 
 $idUsuario = (int)$_SESSION['idUsuario'];
@@ -33,67 +32,15 @@ if ($usuario = $result->fetch_assoc()) {
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Configurações - controlStoke</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="../css/style.css">
-    <style>
-        .alert-container {
-            margin-bottom: 20px;
-            width: 100%;
-        }
-        .alert-custom {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            padding: 14px 20px;
-            border-radius: 8px;
-            font-size: 0.95rem;
-            font-weight: 500;
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
-        }
-        .alert-content {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-        }
-        .alert-close-btn {
-            background: transparent;
-            border: none;
-            font-size: 1.2rem;
-            cursor: pointer;
-            color: inherit;
-            opacity: 0.7;
-            padding: 0 5px;
-            line-height: 1;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-        .alert-close-btn:hover {
-            opacity: 1;
-        }
-        /* Cores do Alerta */
-        .alert-sucesso {
-            background-color: #e6f4ea;
-            color: #137333;
-            border-left: 5px solid #34a853;
-        }
-        .alert-erro {
-            background-color: #fce8e6;
-            color: #c5221f;
-            border-left: 5px solid #ea4335;
-        }
-        .alert-aviso {
-            background-color: #fef7e0;
-            color: #b06000;
-            border-left: 5px solid #fbbc04;
-        }
-        </style>
 </head>
 <body>
 
     <?php include 'menu.php'; ?>
 
-    <main class="page-container" style="display: block;">
+    <main class="page-container d-block">
         
         <div class="settings-header">
             <i class="fa-solid fa-gear settings-header-icon"></i>
@@ -104,7 +51,7 @@ if ($usuario = $result->fetch_assoc()) {
         </div>
 
        <?php if (isset($_GET['status'])): ?>
-            <div class="alert-container" id="box-alerta">
+            <div class="alert-container w-100 mb-4" id="box-alerta">
                 <?php
                     $status = $_GET['status'];
                     
@@ -276,7 +223,7 @@ if ($usuario = $result->fetch_assoc()) {
                             <i class="fa-regular fa-trash-can"></i>
                             <span>EXCLUIR CONTA</span>
                         </div>
-                        <button class="btn-outline-delete" onclick="openDeleteAccountModal()">EXCLUIR</button>
+                        <button type="button" class="btn-outline-delete" data-bs-toggle="modal" data-bs-target="#modalExcluirConta">EXCLUIR</button>
                     </div>
                     <p class="delete-account-desc">Essa ação é permanente e remove acesso a conta!</p>
                 </div>
@@ -286,26 +233,31 @@ if ($usuario = $result->fetch_assoc()) {
 
     </main>
 
-    <!-- MODAL DE CONFIRMAÇÃO DE EXCLUSÃO DE CONTA -->
-    <div class="modal-overlay" id="modal-excluir-conta">
-        <div class="modal-card">
-            <button class="modal-close-btn" onclick="closeDeleteAccountModal()"><i class="fa-solid fa-xmark"></i></button>
-            <h3 class="modal-title">EXCLUIR CONTA</h3>
-            <p class="modal-text">
-                TEM CERTEZA QUE DESEJA EXCLUIR SUA CONTA? <strong>TODOS OS DADOS E REGISTROS SERÃO REMOVIDOS PERMANENTEMENTE.</strong>
-            </p>
-            <button class="btn-confirm-delete" onclick="confirmDeleteAccount()">
-                <i class="fa-regular fa-trash-can"></i>
-                <span>EXCLUIR CONTA</span>
-            </button>
+    <!-- MODAL DE CONFIRMAÇÃO DE EXCLUSÃO DE CONTA (BOOTSTRAP 5) -->
+    <div class="modal fade" id="modalExcluirConta" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content modal-card position-relative text-center">
+                <button type="button" class="modal-close-btn" data-bs-dismiss="modal" aria-label="Close">
+                    <i class="fa-solid fa-xmark"></i>
+                </button>
+                <h3 class="modal-title">EXCLUIR CONTA</h3>
+                <p class="modal-text">
+                    TEM CERTEZA QUE DESEJA EXCLUIR SUA CONTA? <strong>TODOS OS DADOS E REGISTROS SERÃO REMOVIDOS PERMANENTEMENTE.</strong>
+                </p>
+                <button type="button" class="btn-confirm-delete mx-auto" onclick="confirmDeleteAccount()">
+                    <i class="fa-regular fa-trash-can"></i>
+                    <span>EXCLUIR CONTA</span>
+                </button>
+            </div>
         </div>
     </div>
 
-    <footer class="footer">
+    <footer class="footer text-center">
         <p>© <?php echo date('Y'); ?> controlStoke — Sistema de Controle de Estoque</p>
         <p><a href="politica.php">Política de Privacidade</a></p>
     </footer>
 
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
     <script>
         function togglePassword(inputId, icon) {
             const input = document.getElementById(inputId);
@@ -320,27 +272,9 @@ if ($usuario = $result->fetch_assoc()) {
             }
         }
 
-        const modalDeleteAccount = document.getElementById('modal-excluir-conta');
-
-        function openDeleteAccountModal() {
-            modalDeleteAccount.classList.add('active');
-        }
-
-        function closeDeleteAccountModal() {
-            modalDeleteAccount.classList.remove('active');
-        }
-
         function confirmDeleteAccount() {
             window.location.href = 'excluirConta.php';
         }
-
-        modalDeleteAccount.addEventListener('click', function(e) {
-            if (e.target === modalDeleteAccount) closeDeleteAccountModal();
-        });
-
-        document.addEventListener('keydown', function(e) {
-            if (e.key === 'Escape' && modalDeleteAccount.classList.contains('active')) closeDeleteAccountModal();
-        });
 
         // Máscara de CPF em JavaScript
         document.addEventListener('DOMContentLoaded', function () {
