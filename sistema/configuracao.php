@@ -121,6 +121,28 @@ if ($usuario = $result->fetch_assoc()) {
                                 <i class="fa-solid fa-xmark"></i>
                             </button>
                         </div>';
+                    } elseif ($status === 'cpf_invalido') {
+                        echo '
+                        <div class="alert-custom alert-erro">
+                            <div class="alert-content">
+                                <i class="fa-solid fa-triangle-exclamation"></i>
+                                <span>O CPF informado é inválido. Por favor, insira um CPF com 11 dígitos válido.</span>
+                            </div>
+                            <button type="button" class="alert-close-btn" onclick="document.getElementById(\'box-alerta\').remove()">
+                                <i class="fa-solid fa-xmark"></i>
+                            </button>
+                        </div>';
+                    } elseif ($status === 'telefone_invalido') {
+                        echo '
+                        <div class="alert-custom alert-erro">
+                            <div class="alert-content">
+                                <i class="fa-solid fa-triangle-exclamation"></i>
+                                <span>O telefone deve conter no mínimo 10 dígitos (DDD + número).</span>
+                            </div>
+                            <button type="button" class="alert-close-btn" onclick="document.getElementById(\'box-alerta\').remove()">
+                                <i class="fa-solid fa-xmark"></i>
+                            </button>
+                        </div>';
                     }
                 ?>
             </div>
@@ -259,54 +281,136 @@ if ($usuario = $result->fetch_assoc()) {
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
     <script>
-        function togglePassword(inputId, icon) {
-            const input = document.getElementById(inputId);
-            if (input.type === 'password') {
-                input.type = 'text';
-                icon.classList.remove('fa-eye');
-                icon.classList.add('fa-eye-slash');
-            } else {
-                input.type = 'password';
-                icon.classList.remove('fa-eye-slash');
-                icon.classList.add('fa-eye');
+    // Mostrar e ocultar senhas
+    function togglePassword(inputId, icon) {
+        const input = document.getElementById(inputId);
+
+        if (input.type === 'password') {
+            input.type = 'text';
+            icon.classList.remove('fa-eye');
+            icon.classList.add('fa-eye-slash');
+        } else {
+            input.type = 'password';
+            icon.classList.remove('fa-eye-slash');
+            icon.classList.add('fa-eye');
+        }
+    }
+
+    // Confirmar exclusão da conta
+    function confirmDeleteAccount() {
+        window.location.href = 'excluirConta.php';
+    }
+
+    document.addEventListener('DOMContentLoaded', function () {
+        const cpfInput = document.getElementById('cpf');
+        const telefoneInput = document.getElementById('telefone');
+        const formDados = document.getElementById('form-dados-conta');
+
+        // Formatar CPF
+        function aplicarMascaraCPF(valor) {
+            let v = valor.replace(/\D/g, '');
+
+            if (v.length > 11) {
+                v = v.slice(0, 11);
             }
+
+            if (v.length > 3) {
+                v = v.replace(/^(\d{3})(\d)/, '$1.$2');
+            }
+
+            if (v.length > 7) {
+                v = v.replace(/^(\d{3})\.(\d{3})(\d)/, '$1.$2.$3');
+            }
+
+            if (v.length > 11) {
+                v = v.replace(
+                    /^(\d{3})\.(\d{3})\.(\d{3})(\d)/,
+                    '$1.$2.$3-$4'
+                );
+            }
+
+            return v;
         }
 
-        function confirmDeleteAccount() {
-            window.location.href = 'excluirConta.php';
-        }
+        // Formatar telefone
+        function aplicarMascaraTelefone(valor) {
+            let v = valor.replace(/\D/g, '');
 
-        // Máscara de CPF em JavaScript
-        document.addEventListener('DOMContentLoaded', function () {
-            const cpfInput = document.getElementById('cpf');
-            const formDados = document.getElementById('form-dados-conta');
+            if (v.length > 11) {
+                v = v.slice(0, 11);
+            }
 
-            function aplicarMascaraCPF(valor) {
-                let v = valor.replace(/\D/g, '');
-                if (v.length > 11) v = v.slice(0, 11);
-
-                v = v.replace(/(\d{3})(\d)/, '$1.$2');
-                v = v.replace(/(\d{3})(\d)/, '$1.$2');
-                v = v.replace(/(\d{3})(\d{1,2})$/, '$1-$2');
+            if (v.length <= 2) {
                 return v;
             }
 
-            if (cpfInput && cpfInput.value) {
-                cpfInput.value = aplicarMascaraCPF(cpfInput.value);
+            if (v.length <= 6) {
+                return '(' + v.slice(0, 2) + ') ' + v.slice(2);
             }
 
-            if (cpfInput) {
-                cpfInput.addEventListener('input', function (e) {
-                    e.target.value = aplicarMascaraCPF(e.target.value);
-                });
+            if (v.length <= 10) {
+                return '(' + v.slice(0, 2) + ') ' +
+                    v.slice(2, 6) + '-' + v.slice(6);
             }
 
-            if (formDados) {
-                formDados.addEventListener('submit', function () {
-                    cpfInput.value = cpfInput.value.replace(/\D/g, '');
-                });
-            }
-        });
-    </script>
+            return '(' + v.slice(0, 2) + ') ' +
+                v.slice(2, 7) + '-' + v.slice(7);
+        }
+
+        // Aplicar máscaras ao carregar os dados
+        if (cpfInput && cpfInput.value) {
+            cpfInput.value = aplicarMascaraCPF(cpfInput.value);
+        }
+
+        if (telefoneInput && telefoneInput.value) {
+            telefoneInput.value =
+                aplicarMascaraTelefone(telefoneInput.value);
+        }
+
+        // Aplicar máscaras enquanto o usuário digita
+        if (cpfInput) {
+            cpfInput.addEventListener('input', function (e) {
+                e.target.value = aplicarMascaraCPF(e.target.value);
+            });
+        }
+
+        if (telefoneInput) {
+            telefoneInput.addEventListener('input', function (e) {
+                e.target.value =
+                    aplicarMascaraTelefone(e.target.value);
+            });
+        }
+
+        // Validar os dados antes de enviar o formulário
+        if (formDados) {
+            formDados.addEventListener('submit', function (e) {
+                const cpfApenasNumeros = cpfInput
+                    ? cpfInput.value.replace(/\D/g, '')
+                    : '';
+
+                const telefoneApenasNumeros = telefoneInput
+                    ? telefoneInput.value.replace(/\D/g, '')
+                    : '';
+
+                if (cpfApenasNumeros.length !== 11) {
+                    alert('O CPF deve ter exatamente 11 dígitos.');
+                    e.preventDefault();
+                    return;
+                }
+
+                if (telefoneApenasNumeros.length < 10) {
+                    alert(
+                        'O telefone deve ter no mínimo 10 dígitos (DDD + número).'
+                    );
+                    e.preventDefault();
+                    return;
+                }
+
+                // Enviar o CPF somente com números
+                cpfInput.value = cpfApenasNumeros;
+            });
+        }
+    });
+</script>
 </body>
 </html>
