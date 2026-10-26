@@ -10,7 +10,6 @@ $idUsuario = (int)$_SESSION['idUsuario'];
 
 require_once '../conecta/conecta.php';
 
-// Consulta para buscar as movimentações do usuário e o nome do produto vinculado
 $sql = "SELECT es.isEntradaSaida, es.tipoEntradaSaida, es.quantidadeEntradaSaida, p.nomeProduto
         FROM tb_entradasaida es
         INNER JOIN tb_produtos p ON es.idProduto = p.idProduto
@@ -39,6 +38,10 @@ $stmt->close();
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="../css/style.css">
+
+    <!-- Bibliotecas para Geração de PDF (jsPDF e AutoTable) -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.31/jspdf.plugin.autotable.min.js"></script>
 </head>
 <body>
 
@@ -46,14 +49,14 @@ $stmt->close();
 
     <main class="page-container d-block">
         
-        <!-- BARRA DE PESQUISA E FILTRO COM DROPDOWN -->
-        <div class="search-filter-container">
-            <div class="search-box">
+        <!-- BARRA DE PESQUISA, FILTRO E BOTÃO EXPORTAR PDF -->
+        <div class="search-filter-container d-flex flex-wrap gap-2 align-items-center mb-3">
+            <div class="search-box flex-grow-1">
                 <i class="fa-solid fa-magnifying-glass"></i>
                 <input type="text" id="input-pesquisa" placeholder="pesquisar produto ou tipo de movimentação...">
             </div>
 
-            <div class="filter-dropdown-container">
+            <div class="filter-dropdown-container position-relative">
                 <button class="btn-filter" id="btn-toggle-filter" type="button">
                     <i class="fa-solid fa-filter"></i>
                     <span>FILTRAR</span>
@@ -78,6 +81,11 @@ $stmt->close();
                     </div>
                 </div>
             </div>
+
+            <!-- BOTÃO EXPORTAR PDF -->
+            <button class="btn btn-danger" id="btn-exportar-pdf" type="button">
+                <i class="fa-solid fa-file-pdf"></i> PDF
+            </button>
         </div>
 
         <!-- CARD DE HISTÓRICO DE MOVIMENTAÇÕES -->
@@ -151,6 +159,7 @@ $stmt->close();
             const filterItems = document.querySelectorAll('.filter-dropdown-item');
             const movementList = document.querySelector('.movement-list');
             const msgSemResultados = document.getElementById('mensagem-sem-resultados');
+            const btnExportarPdf = document.getElementById('btn-exportar-pdf');
 
             let currentTypeFilter = 'todos';
 
@@ -197,7 +206,6 @@ $stmt->close();
                     const productDesc = item.querySelector('p') ? item.querySelector('p').textContent.toLowerCase() : '';
                     const tipoMov = item.getAttribute('data-tipo');
 
-                    // Procura tanto no NOME do produto quanto na DESCRIÇÃO
                     const matchesSearch = productName.includes(query) || productDesc.includes(query);
                     let matchesType = true;
 
@@ -214,7 +222,6 @@ $stmt->close();
                     }
                 });
 
-                // Exibe a mensagem de aviso caso nenhum item seja visível
                 if (msgSemResultados) {
                     if (visiveis === 0 && items.length > 0) {
                         msgSemResultados.classList.remove('d-none');
@@ -244,8 +251,53 @@ $stmt->close();
                 });
             }
 
-            // Evento para filtrar em tempo real ao digitar
             searchInput.addEventListener('input', applyFilters);
+
+            // FUNÇÃO PARA EXPORTAR O PDF COM OS DADOS FILTRADOS
+            btnExportarPdf.addEventListener('click', function() {
+                const { jsPDF } = window.jspdf;
+                const doc = new jsPDF();
+
+                let tituloFiltro = 'Todas as Movimentações';
+                if (currentTypeFilter === 'entradas') tituloFiltro = 'Relatório de Entradas';
+                if (currentTypeFilter === 'saidas') tituloFiltro = 'Relatório de Saídas';
+
+                // Cabeçalho do documento
+                doc.setFontSize(16);
+                doc.text('controlStoke - Relatório de Movimentações', 14, 20);
+                doc.setFontSize(11);
+                doc.setTextColor(100);
+                doc.text(`Filtro: ${tituloFiltro}`, 14, 28);
+                doc.text(`Data: ${new Date().toLocaleDateString('pt-BR')}`, 14, 34);
+
+                // Captura apenas os elementos visíveis na página
+                const visibleItems = document.querySelectorAll('.movement-item:not(.d-none)');
+                const rows = [];
+
+                visibleItems.forEach((item, index) => {
+                    const nome = item.querySelector('h4') ? item.querySelector('h4').textContent : '';
+                    const tipo = item.querySelector('p') ? item.querySelector('p').textContent : '';
+                    const quantidade = item.querySelector('.movement-value') ? item.querySelector('.movement-value').textContent : '';
+                    
+                    rows.push([index + 1, nome, tipo, quantidade]);
+                });
+
+                if (rows.length === 0) {
+                    alert('Nenhuma movimentação visível para exportar.');
+                    return;
+                }
+
+                // Gerar Tabela no PDF
+                doc.autoTable({
+                    startY: 40,
+                    head: [['#', 'Produto', 'Tipo / Descrição', 'Quantidade']],
+                    body: rows,
+                    theme: 'striped',
+                    headStyles: { fillColor: [40, 116, 166] }
+                });
+
+                doc.save(`relatorio_estoque_${new Date().toISOString().slice(0, 10)}.pdf`);
+            });
         });
     </script>
 </body>
