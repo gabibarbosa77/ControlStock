@@ -71,7 +71,7 @@ while ($rowMov = $resMov->fetch_assoc()) {
 }
 $stmtMov->close();
 
-// 4. ITENS CRÍTICOS PARA REPOSIÇÃO (ZERADOS OU BAIXOS)
+// ITENS CRÍTICOS PARA REPOSIÇÃO (ZERADOS OU BAIXOS)
 $sqlCriticos = "SELECT p.codigoBarras, p.nomeProduto, p.estoqueProduto, p.estoqueMinimo, c.nomeCategoria
                 FROM tb_produtos p
                 LEFT JOIN tb_categoria c ON p.idCategoria = c.idCategoria
