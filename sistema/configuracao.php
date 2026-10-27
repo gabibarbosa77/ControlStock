@@ -10,7 +10,6 @@ require_once '../conecta/conecta.php';
 
 $idUsuario = (int)$_SESSION['idUsuario'];
 
-// 2. Consulta dos dados do utilizador
 $sql = "SELECT nomeUsuario, emailUsuario, cpfUsuario, telefoneUsuario FROM tb_usuario WHERE idUsuario = ?";
 $stmt = $conn->prepare($sql);
 $stmt->bind_param("i", $idUsuario);
@@ -150,7 +149,7 @@ if ($usuario = $result->fetch_assoc()) {
 
         <div class="settings-grid">
             
-            <!-- COLUNA 1: DADOS DA CONTA -->
+            <!-- DADOS DA CONTA -->
             <div class="settings-card">
                 <div class="settings-card-title">
                     <i class="fa-regular fa-user"></i>
@@ -196,7 +195,7 @@ if ($usuario = $result->fetch_assoc()) {
                 </form>
             </div>
 
-            <!-- COLUNA 2: ALTERAR SENHA + EXCLUIR CONTA -->
+            <!-- ALTERAR SENHA + EXCLUIR CONTA -->
             <div>
                 <div class="settings-card">
                     <div class="settings-card-title">
@@ -238,7 +237,7 @@ if ($usuario = $result->fetch_assoc()) {
                     </form>
                 </div>
 
-                <!-- CARD: EXCLUIR CONTA -->
+                <!-- EXCLUIR CONTA -->
                 <div class="delete-account-card">
                     <div class="delete-account-header">
                         <div class="delete-account-title">
@@ -255,7 +254,7 @@ if ($usuario = $result->fetch_assoc()) {
 
     </main>
 
-    <!-- MODAL DE CONFIRMAÇÃO DE EXCLUSÃO DE CONTA (BOOTSTRAP 5) -->
+    <!-- MODAL DE CONFIRMAÇÃO DE EXCLUSÃO DE CONTA -->
     <div class="modal fade" id="modalExcluirConta" tabindex="-1" aria-hidden="true">
         <div class="modal-dialog modal-dialog-centered">
             <div class="modal-content modal-card position-relative text-center">
@@ -280,11 +279,9 @@ if ($usuario = $result->fetch_assoc()) {
     </footer>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
-    <script>
-    // Mostrar e ocultar senhas
+<script>
     function togglePassword(inputId, icon) {
         const input = document.getElementById(inputId);
-
         if (input.type === 'password') {
             input.type = 'text';
             icon.classList.remove('fa-eye');
@@ -296,7 +293,6 @@ if ($usuario = $result->fetch_assoc()) {
         }
     }
 
-    // Confirmar exclusão da conta
     function confirmDeleteAccount() {
         window.location.href = 'excluirConta.php';
     }
@@ -306,68 +302,39 @@ if ($usuario = $result->fetch_assoc()) {
         const telefoneInput = document.getElementById('telefone');
         const formDados = document.getElementById('form-dados-conta');
 
-        // Formatar CPF
+        // Função para formatar o CPF
         function aplicarMascaraCPF(valor) {
             let v = valor.replace(/\D/g, '');
+            if (v.length > 11) v = v.slice(0, 11);
 
-            if (v.length > 11) {
-                v = v.slice(0, 11);
-            }
-
-            if (v.length > 3) {
-                v = v.replace(/^(\d{3})(\d)/, '$1.$2');
-            }
-
-            if (v.length > 7) {
-                v = v.replace(/^(\d{3})\.(\d{3})(\d)/, '$1.$2.$3');
-            }
-
-            if (v.length > 11) {
-                v = v.replace(
-                    /^(\d{3})\.(\d{3})\.(\d{3})(\d)/,
-                    '$1.$2.$3-$4'
-                );
-            }
-
+            v = v.replace(/(\d{3})(\d)/, '$1.$2');
+            v = v.replace(/(\d{3})(\d)/, '$1.$2');
+            v = v.replace(/(\d{3})(\d{1,2})$/, '$1-$2');
             return v;
         }
 
-        // Formatar telefone
+        // Função para formatar o Telefone/Celular
         function aplicarMascaraTelefone(valor) {
             let v = valor.replace(/\D/g, '');
-
-            if (v.length > 11) {
-                v = v.slice(0, 11);
-            }
-
-            if (v.length <= 2) {
-                return v;
-            }
-
-            if (v.length <= 6) {
-                return '(' + v.slice(0, 2) + ') ' + v.slice(2);
-            }
+            if (v.length > 11) v = v.slice(0, 11);
 
             if (v.length <= 10) {
-                return '(' + v.slice(0, 2) + ') ' +
-                    v.slice(2, 6) + '-' + v.slice(6);
+                v = v.replace(/^(\d{2})(\d{4})(\d{0,4})/, '($1) $2-$3');
+            } else {
+                v = v.replace(/^(\d{2})(\d{5})(\d{0,4})/, '($1) $2-$3');
             }
-
-            return '(' + v.slice(0, 2) + ') ' +
-                v.slice(2, 7) + '-' + v.slice(7);
+            return v;
         }
 
-        // Aplicar máscaras ao carregar os dados
+        // Aplica as máscaras nos dados que vêm do banco ao carregar a página
         if (cpfInput && cpfInput.value) {
             cpfInput.value = aplicarMascaraCPF(cpfInput.value);
         }
-
         if (telefoneInput && telefoneInput.value) {
-            telefoneInput.value =
-                aplicarMascaraTelefone(telefoneInput.value);
+            telefoneInput.value = aplicarMascaraTelefone(telefoneInput.value);
         }
 
-        // Aplicar máscaras enquanto o usuário digita
+        // Aplica as máscaras dinamicamente ao digitar
         if (cpfInput) {
             cpfInput.addEventListener('input', function (e) {
                 e.target.value = aplicarMascaraCPF(e.target.value);
@@ -376,38 +343,27 @@ if ($usuario = $result->fetch_assoc()) {
 
         if (telefoneInput) {
             telefoneInput.addEventListener('input', function (e) {
-                e.target.value =
-                    aplicarMascaraTelefone(e.target.value);
+                e.target.value = aplicarMascaraTelefone(e.target.value);
             });
         }
 
-        // Validar os dados antes de enviar o formulário
+        // Validações antes do envio do formulário
         if (formDados) {
             formDados.addEventListener('submit', function (e) {
-                const cpfApenasNumeros = cpfInput
-                    ? cpfInput.value.replace(/\D/g, '')
-                    : '';
-
-                const telefoneApenasNumeros = telefoneInput
-                    ? telefoneInput.value.replace(/\D/g, '')
-                    : '';
+                const cpfApenasNumeros = cpfInput ? cpfInput.value.replace(/\D/g, '') : '';
+                const telApenasNumeros = telefoneInput ? telefoneInput.value.replace(/\D/g, '') : '';
 
                 if (cpfApenasNumeros.length !== 11) {
                     alert('O CPF deve ter exatamente 11 dígitos.');
                     e.preventDefault();
-                    return;
+                    return false;
                 }
 
-                if (telefoneApenasNumeros.length < 10) {
-                    alert(
-                        'O telefone deve ter no mínimo 10 dígitos (DDD + número).'
-                    );
+                if (telApenasNumeros.length < 10) {
+                    alert('O telefone deve ter no mínimo 10 dígitos (DDD + número).');
                     e.preventDefault();
-                    return;
+                    return false;
                 }
-
-                // Enviar o CPF somente com números
-                cpfInput.value = cpfApenasNumeros;
             });
         }
     });
