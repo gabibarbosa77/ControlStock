@@ -13,7 +13,7 @@ $idUsuario = (int)$_SESSION['idUsuario'];
 
 require_once '../conecta/conecta.php';
 
-// 1. CONSULTA NOME DO USUÁRIO
+// CONSULTA NOME DO USUÁRIO
 $nomeUsuario = "Usuário";
 $sqlUser = "SELECT nomeUsuario FROM tb_usuario WHERE idUsuario = ?";
 $stmtUser = $conn->prepare($sqlUser);
@@ -25,7 +25,7 @@ if ($rowUser = $resUser->fetch_assoc()) {
 }
 $stmtUser->close();
 
-// 2. MÉTRICAS DE PRODUTOS E ESTOQUE
+// MÉTRICAS DE PRODUTOS E ESTOQUE
 $totalProdutos = 0;
 $produtosEmEstoque = 0;
 $estoqueBaixo = 0;
@@ -52,7 +52,7 @@ while ($row = $resMetricas->fetch_assoc()) {
 }
 $stmtMetricas->close();
 
-// 3. MOVIMENTAÇÕES RECENTES (ÚLTIMAS 3)
+// MOVIMENTAÇÕES RECENTES (ÚLTIMAS 3)
 $sqlMov = "SELECT es.tipoEntradaSaida, es.quantidadeEntradaSaida, p.nomeProduto
            FROM tb_entradasaida es
            INNER JOIN tb_produtos p ON es.idProduto = p.idProduto
