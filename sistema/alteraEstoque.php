@@ -1,7 +1,6 @@
 <?php
 session_start();
 
-// 1. Verifica se o usuário está logado
 if (!isset($_SESSION['idUsuario'])) {
     header("Location: ../login.php");
     exit();
@@ -13,9 +12,6 @@ require_once '../conecta/conecta.php';
 $mensagemErro = '';
 $mensagemSucesso = '';
 
-// ==========================================
-// 2. PROCESSAMENTO DO FORMULÁRIO (POST)
-// ==========================================
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $idProduto = isset($_POST['id_produto']) ? (int)$_POST['id_produto'] : 0;
     $tipoOpcao = isset($_POST['tipo_opcao']) ? trim($_POST['tipo_opcao']) : '';
@@ -71,8 +67,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $stmtUpdate->close();
 
             // Insert em tb_entradasaida
-            $sqlInsert = "INSERT INTO tb_entradasaida (tipoEntradaSaida, quantidadeEntradaSaida, idUsuario, idProduto) 
-                          VALUES (?, ?, ?, ?)";
+            $sqlInsert = "INSERT INTO tb_entradasaida (tipoEntradaSaida, quantidadeEntradaSaida, idUsuario, idProduto) VALUES (?, ?, ?, ?)";
             $stmtInsert = $conn->prepare($sqlInsert);
             $stmtInsert->bind_param("siii", $tipoOpcao, $qtdMovimentada, $idUsuario, $idProduto);
             $stmtInsert->execute();
@@ -81,7 +76,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             // Confirma alterações no banco
             $conn->commit();
 
-            // Redireciona de volta para a lista de estoque
             header("Location: exibirEstoque.php?sucesso=1");
             exit();
 
@@ -92,9 +86,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     }
 }
 
-// ==========================================
-// 3. CARREGAMENTO DOS DADOS DO PRODUTO (GET)
-// ==========================================
+// CARREGAMENTO DOS DADOS DO PRODUTO (GET)
 $idProduto = isset($_GET['id']) ? (int)$_GET['id'] : (isset($_POST['id_produto']) ? (int)$_POST['id_produto'] : 0);
 
 if ($idProduto <= 0) {
@@ -137,7 +129,6 @@ $stmt->close();
         
         <div class="form-card mx-auto">
             
-            <!-- Cabeçalho alinhado sem sobreposição -->
             <div class="d-flex align-items-center justify-content-center position-relative mb-4">
                 <a href="exibirEstoque.php" class="btn-back position-absolute start-0" title="Voltar ao Estoque">
                     <i class="fa-solid fa-chevron-left"></i>
@@ -145,7 +136,7 @@ $stmt->close();
                 <h2 class="m-0 text-center">ALTERAR/ENTRADA ESTOQUE</h2>
             </div>
 
-            <!-- Exibição de Alerta de Erro -->
+            <!-- Exibicao de Alerta de Erro -->
             <?php if (!empty($mensagemErro)): ?>
                 <div class="alert alert-danger text-center mb-3" role="alert">
                     <i class="fa-solid fa-triangle-exclamation me-2"></i>
@@ -208,6 +199,5 @@ $stmt->close();
     </footer>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
-
 </body>
 </html>
