@@ -8,21 +8,16 @@ if (!isset($_SESSION['idUsuario'])) {
 
 $idUsuario = (int)$_SESSION['idUsuario'];
 
-// Conexão com o banco de dados
 require_once '../conecta/conecta.php';
 
-// Busca as categorias cadastradas pelo usuário logado
-$sqlCategorias = "SELECT idCategoria, nomeCategoria 
-                  FROM tb_categoria 
-                  WHERE idUsuario = ? 
-                  ORDER BY nomeCategoria";
+$sqlCategorias = "SELECT idCategoria, nomeCategoria FROM tb_categoria WHERE idUsuario = ? ORDER BY nomeCategoria";
 
 $stmtCat = $conn->prepare($sqlCategorias);
 $stmtCat->bind_param("i", $idUsuario);
 $stmtCat->execute();
 $resCategorias = $stmtCat->get_result();
 
-// Tratamento das mensagens de retorno via URL (?status=...)
+// Tratamento das mensagens de retorno via URL
 $status = $_GET['status'] ?? '';
 $mensagem = '';
 $tipoStatus = '';
@@ -53,11 +48,8 @@ switch ($status) {
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Cadastrar Produto - controlStoke</title>
-    <!-- Bootstrap 5 CSS -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
-    <!-- FontAwesome -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <!-- CSS Customizado -->
     <link rel="stylesheet" href="../css/style.css">
 </head>
 <body>
@@ -69,7 +61,6 @@ switch ($status) {
         <div class="form-card">
             <h2>CADASTRAR PRODUTO</h2>
 
-            <!-- Exibição do Alerta de Erro -->
             <?php if (!empty($mensagem) && $tipoStatus === 'erro'): ?>
                 <div class="alert-box erro">
                     <i class="fa-solid fa-triangle-exclamation"></i>
@@ -79,31 +70,26 @@ switch ($status) {
 
             <form action="processaProduto.php" method="POST" class="product-form" id="form-cadastrar-produto">
                 
-                <!-- Nome do Produto -->
                 <div class="form-group">
                     <label for="nome_produto">NOME PRODUTO</label>
                     <input type="text" id="nome_produto" name="nome_produto" required autocomplete="off">
                 </div>
 
-                <!-- Código de Barras (Max 10) -->
                 <div class="form-group">
                     <label for="codigo_barras">CÓDIGO BARRAS (MAX: 10 CARACTERES)</label>
                     <input type="text" id="codigo_barras" name="codigo_barras" maxlength="10" required autocomplete="off">
                 </div>
 
-                <!-- Quantidade Inicial -->
                 <div class="form-group">
                     <label for="quantidade_inicial">QUANTIDADE INICIAL</label>
                     <input type="number" id="quantidade_inicial" name="quantidade_inicial" min="0" required>
                 </div>
 
-                <!-- Preço -->
                 <div class="form-group">
                     <label for="preco">PREÇO</label>
                     <input type="text" id="preco" name="preco" placeholder="R$ 0,00" required>
                 </div>
 
-                <!-- Estoque Mínimo -->
                 <div class="form-group">
                     <label for="estoque_minimo">ESTOQUE MÍNIMO</label>
                     <input type="number" id="estoque_minimo" name="estoque_minimo" min="0" required>
