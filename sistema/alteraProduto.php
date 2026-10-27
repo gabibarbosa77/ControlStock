@@ -9,9 +9,6 @@ if (!isset($_SESSION['idUsuario'])) {
 $idUsuario = (int)$_SESSION['idUsuario'];
 require_once '../conecta/conecta.php';
 
-// =========================================================================
-// 1. PROCESSAMENTO DO FORMULÁRIO (MÉTODO POST)
-// =========================================================================
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $idProduto = (int)$_POST['id_produto'];
     $nomeProduto = trim($_POST['nome_produto']);
@@ -19,12 +16,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $idCategoria = (int)$_POST['categoria'];
     $estoqueMinimo = (int)$_POST['estoque_minimo'];
 
-    // Tratamento do valor do Preço
+    // Tratamento do valor do Preco
     $precoRaw = $_POST['preco'];
     $precoLimpo = preg_replace('/[^\d,]/', '', $precoRaw);
     $precoFloat = (float)str_replace(',', '.', $precoLimpo);
 
-    // VALIDAÇÃO: Verifica se o código de barras já pertence a OUTRO produto
+    // Verifica se o codigo de barras ja pertence a OUTRO produto
     $sqlCheck = "SELECT idProduto FROM tb_produtos WHERE codigoBarras = ? AND idUsuario = ? AND idProduto <> ?";
     $stmtCheck = $conn->prepare($sqlCheck);
     $stmtCheck->bind_param("iii", $codigoBarras, $idUsuario, $idProduto);
@@ -37,14 +34,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     } else {
         $stmtCheck->close();
 
-        $sqlUpdate = "UPDATE tb_produtos 
-                      SET nomeProduto = ?, 
-                          codigoBarras = ?, 
-                          idCategoria = ?, 
-                          precoProduto = ?, 
-                          estoqueMinimo = ? 
-                      WHERE idProduto = ? AND idUsuario = ?";
-
+        $sqlUpdate = "UPDATE tb_produtos SET nomeProduto = ?, codigoBarras = ?, idCategoria = ?, precoProduto = ?, estoqueMinimo = ? WHERE idProduto = ? AND idUsuario = ?";
         $stmtUpdate = $conn->prepare($sqlUpdate);
         $stmtUpdate->bind_param("siidiii", $nomeProduto, $codigoBarras, $idCategoria, $precoFloat, $estoqueMinimo, $idProduto, $idUsuario);
 
@@ -59,9 +49,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     }
 }
 
-// =========================================================================
-// 2. BUSCA DE DADOS PARA RENDERIZAR O FORMULÁRIO (MÉTODO GET)
-// =========================================================================
+// BUSCA DE DADOS PARA RENDERIZAR O FORMULÁRIO (MÉTODO GET)
 if (!isset($_GET['id']) || empty($_GET['id'])) {
     header("Location: exibirEstoque.php");
     exit();
@@ -128,19 +116,16 @@ $stmtCat->close();
             <form action="alteraProduto.php?id=<?= $produto['idProduto'] ?>" method="POST" class="product-form" id="form-altera-produto">
                 <input type="hidden" name="id_produto" value="<?= $produto['idProduto'] ?>">
 
-                <!-- Nome do Produto -->
                 <div class="form-group mb-3">
                     <label for="nome_produto">NOME PRODUTO</label>
                     <input type="text" id="nome_produto" name="nome_produto" value="<?= htmlspecialchars($produto['nomeProduto']) ?>" required autocomplete="off">
                 </div>
 
-                <!-- Código de Barras -->
                 <div class="form-group mb-3">
                     <label for="codigo_barras">CÓDIGO BARRAS (MÁX: 10 CARACTERES)</label>
                     <input type="text" id="codigo_barras" name="codigo_barras" value="<?= htmlspecialchars($produto['codigoBarras']) ?>" maxlength="10" readonly required autocomplete="off">
                 </div>
 
-                <!-- Categoria -->
                 <div class="form-group mb-3">
                     <label for="categoria">CATEGORIA</label>
                     <select id="categoria" name="categoria" required>
@@ -153,19 +138,16 @@ $stmtCat->close();
                     </select>
                 </div>
 
-                <!-- Preço -->
                 <div class="form-group mb-3">
                     <label for="preco">PREÇO</label>
                     <input type="text" id="preco" name="preco" value="R$<?= number_format($produto['precoProduto'], 2, ',', '.') ?>" required>
                 </div>
 
-                <!-- Estoque Mínimo -->
                 <div class="form-group mb-4">
                     <label for="estoque_minimo">ESTOQUE MÍNIMO</label>
                     <input type="number" id="estoque_minimo" name="estoque_minimo" value="<?= (int)$produto['estoqueMinimo'] ?>" required min="0">
                 </div>
 
-                <!-- Botão Salvar -->
                 <button type="submit" class="btn-save w-100 justify-content-center">
                     <i class="fa-regular fa-floppy-disk"></i>
                     <span>SALVAR</span>
