@@ -7,7 +7,6 @@
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
-        /* Estilos do Topbar Nativos */
         .control-topbar {
             background-color: #0d3b66;
             height: 65px;
@@ -39,7 +38,6 @@
             transform: scale(0.95);
         }
 
-        /* Estilos do Offcanvas (Sidebar) Ajustados para Manter Identidade Visual */
         .offcanvas-sidebar {
             width: 320px !important;
             background-color: #92c9e8 !important;
@@ -243,7 +241,6 @@
             </div>
         </div>
     </div>
-
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>
