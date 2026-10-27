@@ -25,11 +25,8 @@ require_once '../conecta/conecta.php';
 $conn->begin_transaction();
 
 try {
-    // 1. Exclui os registros de entrada/saída vinculados aos produtos dessa categoria
-    $sqlEntradaSaida = "DELETE FROM tb_entradasaida 
-                        WHERE idProduto IN (
-                            SELECT idProduto FROM tb_produtos WHERE idCategoria = ? AND idUsuario = ?
-                        ) AND idUsuario = ?";
+    // Exclui os registros de entrada/saída vinculados aos produtos dessa categoria
+    $sqlEntradaSaida = "DELETE FROM tb_entradasaida WHERE idProduto IN (SELECT idProduto FROM tb_produtos WHERE idCategoria = ? AND idUsuario = ?) AND idUsuario = ?";
     $stmtEntradaSaida = $conn->prepare($sqlEntradaSaida);
     if (!$stmtEntradaSaida) {
         throw new Exception("Erro ao preparar exclusão do histórico de movimentações.");
@@ -38,7 +35,7 @@ try {
     $stmtEntradaSaida->execute();
     $stmtEntradaSaida->close();
 
-    // 2. Exclui os produtos vinculados à categoria
+    // Exclui os produtos vinculados à categoria
     $sqlProdutos = "DELETE FROM tb_produtos WHERE idCategoria = ? AND idUsuario = ?";
     $stmtProdutos = $conn->prepare($sqlProdutos);
     if (!$stmtProdutos) {
@@ -48,7 +45,7 @@ try {
     $stmtProdutos->execute();
     $stmtProdutos->close();
 
-    // 3. Exclui a categoria
+    // Exclui a categoria
     $sqlCategoria = "DELETE FROM tb_categoria WHERE idCategoria = ? AND idUsuario = ?";
     $stmtCategoria = $conn->prepare($sqlCategoria);
     if (!$stmtCategoria) {
@@ -57,8 +54,6 @@ try {
     $stmtCategoria->bind_param("ii", $idCategoria, $idUsuario);
     $stmtCategoria->execute();
     $stmtCategoria->close();
-
-    // Se tudo deu certo, confirma no banco
     $conn->commit();
     $conn->close();
 
@@ -73,3 +68,4 @@ try {
     header("Location: cadastrarCategoria.php?status=erro");
     exit();
 }
+?>
