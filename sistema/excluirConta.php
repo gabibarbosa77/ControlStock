@@ -15,7 +15,7 @@ $stmt = $conn->prepare($sql);
 $stmt->bind_param("i", $idUsuario);
 
 if ($stmt->execute()) {
-    // 4. Limpa todas as variáveis de sessão e destrói a sessão atual
+    // Limpa todas as variáveis de sessão e destrói a sessão atual
     $_SESSION = array();
 
     if (ini_get("session.use_cookies")) {
@@ -34,3 +34,4 @@ if ($stmt->execute()) {
     header("Location: configuracao.php?status=erro");
     exit();
 }
+?>
