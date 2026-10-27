@@ -10,6 +10,7 @@ $idUsuario = (int)$_SESSION['idUsuario'];
 
 require_once '../conecta/conecta.php';
 
+// Consulta para buscar as movimentações do usuário e o nome do produto vinculado
 $sql = "SELECT es.isEntradaSaida, es.tipoEntradaSaida, es.quantidadeEntradaSaida, p.nomeProduto
         FROM tb_entradasaida es
         INNER JOIN tb_produtos p ON es.idProduto = p.idProduto
@@ -38,7 +39,6 @@ $stmt->close();
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="../css/style.css">
-
     <!-- Bibliotecas para Geração de PDF (jsPDF e AutoTable) -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.31/jspdf.plugin.autotable.min.js"></script>
@@ -49,7 +49,6 @@ $stmt->close();
 
     <main class="page-container d-block">
         
-        <!-- BARRA DE PESQUISA, FILTRO E BOTÃO EXPORTAR PDF -->
         <div class="search-filter-container d-flex flex-wrap gap-2 align-items-center mb-3">
             <div class="search-box flex-grow-1">
                 <i class="fa-solid fa-magnifying-glass"></i>
@@ -88,7 +87,7 @@ $stmt->close();
             </button>
         </div>
 
-        <!-- CARD DE HISTÓRICO DE MOVIMENTAÇÕES -->
+        <!-- HISTÓRICO DE MOVIMENTAÇÕES -->
         <div class="movements-card mx-auto">
             <h2 class="movements-title">ENTRADAS E RETIRADAS DO ESTOQUE</h2>
 
@@ -136,7 +135,6 @@ $stmt->close();
                     <?php endforeach; ?>
                 <?php endif; ?>
 
-                <!-- Mensagem dinâmica caso a pesquisa não encontre correspondências -->
                 <p id="mensagem-sem-resultados" class="text-center p-4 text-secondary fw-semibold d-none">
                     Nenhum produto ou movimentação encontrada.
                 </p>
