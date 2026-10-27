@@ -1,6 +1,4 @@
-/* ==========================================================================
-   1. CONFIGURAÇÕES GERAIS DA APLICAÇÃO
-   ========================================================================== */
+/* CONFIGURAÇÕES GERAIS DA APLICAÇÃO */
 body {
     background-color: #f8f9fa;
     color: #333333;
@@ -8,9 +6,7 @@ body {
     line-height: 1.6;
 }
 
-/* ==========================================================================
-   2. NAVBAR & HEADER
-   ========================================================================== */
+/* NAVBAR & HEADER */
 .navbar {
     background-color: #0d3b66;
     padding: 15px 5%;
@@ -59,9 +55,7 @@ body {
     color: #0d3b66;
 }
 
-/* ==========================================================================
-   3. LANDING PAGE (index.php)
-   ========================================================================== */
+/* (index.php) */
 .hero-section {
     padding-top: 50px;
     padding-bottom: 20px;
@@ -244,9 +238,7 @@ body {
 
 .tips-list li i { color: #2ec4b6; margin-top: 3px; }
 
-/* ==========================================================================
-   4. AUTENTICAÇÃO (LOGIN E CADASTRO)
-   ========================================================================== */
+/*(LOGIN E CADASTRO)*/
 .login-body {
     background: radial-gradient(circle at center, #104577 0%, #0d3b66 70%, #082642 100%);
     min-height: 100vh;
@@ -379,7 +371,7 @@ body {
     transform: scale(1.03);
 }
 
-/* LINKS DE LOGIN E CADASTRO (AMARELOS E SEM SUBLINHADO) */
+/* LINKS DE LOGIN E CADASTRO */
 .login-register-text {
     color: #ffffff;
     font-size: 13px;
@@ -397,9 +389,7 @@ body {
     text-decoration: none !important;
 }
 
-/* ==========================================================================
-   5. DASHBOARD & PAINEL PRINCIPAL (home.php)
-   ========================================================================== */
+/* (home.php) */
 .dashboard-container {
     max-width: 1200px;
     margin: 80px auto 40px auto;
@@ -655,9 +645,7 @@ body {
 .status-badge.red { background-color: #ffeef0; color: #dc3545; }
 .status-badge.yellow { background-color: #fff9eb; color: #b08d38; }
 
-/* ==========================================================================
-   6. FORMULÁRIOS INTERNOS (CADASTRAR E ALTERAR PRODUTOS)
-   ========================================================================== */
+/* (CADASTRAR E ALTERAR PRODUTOS) */
 .page-container {
     max-width: 1100px;
     width: 100%;
@@ -787,9 +775,7 @@ body {
     text-transform: uppercase;
 }
 
-/* ==========================================================================
-   7. LISTAGEM DE ESTOQUE (exibirEstoque.php)
-   ========================================================================== */
+/* (exibirEstoque.php) */
 .search-filter-container {
     display: flex;
     gap: 15px;
@@ -992,9 +978,7 @@ body {
     color: #ffffff;
 }
 
-/* ==========================================================================
-   8. CATEGORIAS (cadastrarCategoria.php)
-   ========================================================================== */
+/* (cadastrarCategoria.php) */
 .categories-list-container {
     max-width: 650px;
     margin: 30px auto 40px auto;
@@ -1056,9 +1040,7 @@ body {
     margin-bottom: 20px;
 }
 
-/* ==========================================================================
-   9. POLÍTICA DE PRIVACIDADE (politica.php)
-   ========================================================================== */
+/* (politica.php) */
 .privacy-card {
     background-color: #ffffff;
     border: 1.5px solid #dcdcdc;
@@ -1131,9 +1113,7 @@ body {
     font-weight: 600;
 }
 
-/* ==========================================================================
-   10. MOVIMENTAÇÕES (entradaSaida.php)
-   ========================================================================== */
+/* (entradaSaida.php) */
 .movements-card {
     background-color: #ffffff;
     border: 1.5px solid #dcdcdc;
@@ -1230,9 +1210,7 @@ body {
     margin: 6px 0;
 }
 
-/* ==========================================================================
-   11. CONFIGURAÇÕES DA CONTA (configuracao.php)
-   ========================================================================== */
+/* (configuracao.php) */
 .settings-header {
     display: flex;
     align-items: center;
@@ -1394,9 +1372,7 @@ body {
     color: #ffffff;
 }
 
-/* ==========================================================================
-   12. MENSAGENS E ALERTAS DE SISTEMA
-   ========================================================================== */
+/* MENSAGENS E ALERTAS DE SISTEMA */
 .alert-container {
     margin-bottom: 20px;
     width: 100%;
@@ -1448,9 +1424,7 @@ body {
 .alert-box.erro { background-color: rgba(231, 29, 54, 0.2); border: 1px solid #e71d36; color: #ff6b6b; }
 .alert-box.sucesso { background-color: rgba(46, 196, 182, 0.2); border: 1px solid #2ec4b6; color: #2ec4b6; }
 
-/* ==========================================================================
-   13. RODAPÉ (FOOTER)
-   ========================================================================== */
+/* (FOOTER) */
 .footer {
     background-color: #0d3b66;
     color: #ffffff;
@@ -1474,9 +1448,7 @@ body {
 
 .footer a:hover { color: #92c9e8; }
 
-/* ==========================================================================
-   14. RESPONSIVIDADE
-   ========================================================================== */
+/* RESPONSIVIDADE */
 @media (max-width: 950px) {
     .dashboard-main-grid, .settings-grid {
         grid-template-columns: 1fr;
@@ -1500,7 +1472,7 @@ body {
 
 /* AJUSTE DE ALTURA DO CARD DE MOVIMENTAÇÕES RECENTES */
 .dashboard-main-grid {
-    align-items: stretch !important; /* Faz ambas as colunas esticarem até à mesma altura */
+    align-items: stretch !important; 
 }
 
 .dashboard-sidebar-column {
@@ -1514,7 +1486,7 @@ body {
     border-radius: 16px;
     padding: 24px 20px;
     box-shadow: 0 4px 12px rgba(0,0,0,0.03);
-    flex: 1; /* Ocupa todo o espaço vertical disponível na coluna */
+    flex: 1; 
     display: flex;
     flex-direction: column;
     justify-content: space-between;
@@ -1524,7 +1496,7 @@ body {
     display: flex;
     flex-direction: column;
     justify-content: space-around;
-    flex: 1; /* Distribui as 3 movimentações de forma proporcional na altura do card */
+    flex: 1; 
     margin-top: 10px;
 }
 
