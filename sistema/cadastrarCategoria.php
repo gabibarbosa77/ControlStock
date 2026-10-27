@@ -11,11 +11,7 @@ $idUsuario = (int)$_SESSION['idUsuario'];
 require_once '../conecta/conecta.php';
 
 // Consulta para buscar todas as categorias cadastradas do utilizador logado
-$sql = "SELECT idCategoria, nomeCategoria
-        FROM tb_categoria
-        WHERE idUsuario = ?
-        ORDER BY nomeCategoria";
-
+$sql = "SELECT idCategoria, nomeCategoria FROM tb_categoria WHERE idUsuario = ? ORDER BY nomeCategoria";
 $stmt = $conn->prepare($sql);
 $stmt->bind_param("i", $idUsuario);
 $stmt->execute();
@@ -129,7 +125,6 @@ switch ($status) {
             </div>
         </div>
 
-        <!-- Toast de Sucesso -->
         <?php if (!empty($mensagem) && $tipoStatus === 'sucesso'): ?>
             <div class="toast-success" id="toast-mensagem">
                 <i class="fa-solid fa-circle-check toast-icon"></i>
@@ -142,7 +137,7 @@ switch ($status) {
 
     </main>
 
-    <!-- MODAL 1: ALTERAR CATEGORIA (BOOTSTRAP 5) -->
+    <!-- ALTERAR CATEGORIA -->
     <div class="modal fade" id="modalEditarCategoria" tabindex="-1" aria-hidden="true">
         <div class="modal-dialog modal-dialog-centered">
             <div class="modal-content modal-card-category position-relative">
@@ -168,7 +163,7 @@ switch ($status) {
         </div>
     </div>
 
-    <!-- MODAL 2: EXCLUIR CATEGORIA (BOOTSTRAP 5) -->
+    <!-- EXCLUIR CATEGORIA -->
     <div class="modal fade" id="modalExcluirCategoria" tabindex="-1" aria-hidden="true">
         <div class="modal-dialog modal-dialog-centered">
             <div class="modal-content modal-card position-relative">
