@@ -10,7 +10,7 @@ $idUsuario = (int)$_SESSION['idUsuario'];
 
 require_once '../conecta/conecta.php';
 
-// 1. Consulta SQL para listar produtos e nome da categoria vinculada
+// Consulta SQL para listar produtos e nome da categoria vinculada
 $sqlProdutos = "SELECT p.idProduto, p.nomeProduto, p.codigoBarras, p.estoqueProduto, 
                        p.precoProduto, p.estoqueMinimo, c.nomeCategoria
                 FROM tb_produtos p
@@ -28,13 +28,13 @@ $totalProdutos = 0;
 $estoqueBaixo = 0;
 $estoqueZerado = 0;
 
-// 2. Processa as métricas e prepara a lista de produtos
+// Processa as métricas e prepara a lista de produtos
 while ($row = $resultado->fetch_assoc()) {
     $totalProdutos++;
     $qtd = (int)$row['estoqueProduto'];
     $min = (int)$row['estoqueMinimo'];
 
-    // Lógica das cores das bolinhas e contadores de métricas
+    // Lógica das cores e contadores de métricas
     if ($qtd == 0) {
         $corStatus = 'red';
         $textoStatus = 'Estoque Zerado';
@@ -194,7 +194,7 @@ $stmt->close();
 
     </main>
 
-    <!-- MODAL DE EXCLUSÃO (BOOTSTRAP 5) -->
+    <!-- MODAL DE EXCLUSÃO -->
     <div class="modal fade" id="modalExcluir" tabindex="-1" aria-hidden="true">
         <div class="modal-dialog modal-dialog-centered">
             <div class="modal-content modal-card position-relative">
