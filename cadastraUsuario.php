@@ -12,19 +12,10 @@ $senhaUsuario    = $_POST['senha'] ?? '';
 $confirmaSenha   = $_POST['confirma_senha'] ?? '';
 $cpf_raw         = $_POST['cpf'] ?? '';
 
-// 1. Limpa o CPF (remove pontos, traços, espaços e caracteres não numéricos)
 $cpf = preg_replace('/[^0-9]/', '', $cpf_raw);
-// 2. Limpa o Telefone (remove parênteses, hífen e espaços para guardar só números)
 $telefone = preg_replace('/[^0-9]/', '', $telefoneUsuario);
 
-if (
-    empty($nomeUsuario) ||
-    empty($emailUsuario) ||
-    empty($telefone) ||
-    empty($senhaUsuario) ||
-    empty($confirmaSenha) ||
-    empty($cpf)
-) {
+if (empty($nomeUsuario) || empty($emailUsuario) || empty($telefone) || empty($senhaUsuario) || empty($confirmaSenha) || empty($cpf)) {
     header("Location: cadastro.php?erro=campos_vazios");
     exit();
 }
@@ -67,7 +58,6 @@ $stmt->close();
 
 $senhaHash = password_hash($senhaUsuario, PASSWORD_DEFAULT);
 
-// Insere o utilizador guardando o CPF limpo (apenas 11 números)
 $sql = "INSERT INTO tb_usuario (nomeUsuario, emailUsuario, telefoneUsuario, senhaUsuario, cpfUsuario) VALUES (?, ?, ?, ?, ?)";
 $stmt = $conn->prepare($sql);
 
